@@ -1,0 +1,7 @@
+<RCC>
+    <qresource prefix="/img/fuc">
+        <file>resource/img/fucimg/collectinf.png</file>
+        <file>resource/img/fucimg/forecast.png</file>
+        <file>resource/img/fucimg/user.png</file>
+    </qresource>
+</RCC>

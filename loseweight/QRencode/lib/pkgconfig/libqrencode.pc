@@ -1,0 +1,11 @@
+prefix=D:/LoseWeight/qrencode-4.0.2/QRencode
+exec_prefix=D:/LoseWeight/qrencode-4.0.2/QRencode/bin
+libdir=D:/LoseWeight/qrencode-4.0.2/QRencode/lib
+includedir=D:/LoseWeight/qrencode-4.0.2/QRencode/include
+
+Name: libqrencode
+Description: A QR Code encoding library
+Version: 4.0.2
+Libs: -L${libdir} -lqrencode
+Libs.private: 
+Cflags: -I${includedir}
