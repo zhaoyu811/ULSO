@@ -4,5 +4,5 @@ build-loseweight-Desktop_Qt_5_9_1_MinGW_32bit-Debug/
 build-loseweight-Desktop_Qt_5_9_1_MinGW_32bit-Release/
 #打包文件
 exe/
-#libmodbus user文件
-libmodbus/loseweight.pro.user*
+#loseweight user文件
+loseweight/loseweight.pro.user*
