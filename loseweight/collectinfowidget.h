@@ -28,6 +28,7 @@ signals:
 public slots:
     void InputButtonClicked();
     void QueryPushButtonClicked();
+    void UpdateDateEdit(int index);
     void UserLineEdit();
     void ChartUserLineEdit();
     void PhoneComboBoxIndexChanged(const QString &phone);
@@ -54,10 +55,10 @@ private:
     QLineEdit * chartUserNameLineEdit;
     QComboBox * chartPhoneComboBox;
     QComboBox * chartTimesComboBox;
-    QChartView *weightChartView;
-    QChartView *waistChartView;
-    QChartView *bodyFatRateChartView;
-    QChartView *healthIndexChartView;
+    View *weightChartView;
+    View *waistChartView;
+    View *bodyFatRateChartView;
+    View *healthIndexChartView;
     QChart *weightChart;
     QChart *waistChart;
     QChart *bodyFatRateChart;
@@ -68,9 +69,10 @@ private:
     QLineSeries *bodyFatRateSeries;
     QLineSeries *healthIndexSeries;
 
-    View *bodyFatRateView2;
-    QChart *bodyFatRateChart2;
-    QLineSeries *bodyFatRateSeries2;
+    QScatterSeries *weightScatterSeries;
+    QScatterSeries *waistScatterSeries;
+    QScatterSeries *bodyFatRateScatterSeries;
+    QScatterSeries *healthIndexScatterSeries;
 };
 
 #endif // COLLECTINFOWIDGET_H

@@ -8,6 +8,7 @@ UserWidget::UserWidget(QWidget *parent) : QWidget(parent)
     QGridLayout *mainLayout = new QGridLayout(this);
 
     QTabWidget *tabWidget = new QTabWidget(this);
+    connect(tabWidget, &QTabWidget::currentChanged, this, &UserWidget::UpdateDateEdit);
     mainLayout->addWidget(tabWidget);
 
     QWidget * addUserTab = new QWidget(this);
@@ -24,6 +25,9 @@ UserWidget::UserWidget(QWidget *parent) : QWidget(parent)
     tabWidget->addTab(updateUserTab, tr("更新用户"));
 
     this->setLayout(mainLayout);
+    QFont font;
+    font.setPointSize(14);//字体大小
+    this->setFont(font);
 }
 
 void UserWidget::InitAddUserTab(QWidget *widget)
@@ -35,9 +39,20 @@ void UserWidget::InitAddUserTab(QWidget *widget)
     QLabel * userNameLabel      = new QLabel(tr("姓名"), groupBox);
     QLabel * genderLabel        = new QLabel(tr("性别"), groupBox);
     QLabel * dateofbirthLabel   = new QLabel(tr("出生日期"), groupBox);
+    //开穴日期
+    QLabel * openHoleTimeLabel  = new QLabel(tr("开穴日期"), groupBox);
+    //开穴斤数
+    QLabel * openHoleWeightLabel = new QLabel(tr("开穴斤数(斤)"), groupBox);
+
     QLabel * phoneLabel         = new QLabel(tr("电话号码"), groupBox);
+    //当前体重
+    QLabel * weightLabel        = new QLabel(tr("当前体重(斤)"), groupBox);
+
     QLabel * heightLabel        = new QLabel(tr("身高(cm)"), groupBox);
-    QLabel * targetweightLabel  = new QLabel(tr("目标体重(kg)"), groupBox);
+    //腰围
+    QLabel * waistLabel         = new QLabel(tr("当前腰围(cm)"), groupBox);
+
+    QLabel * targetweightLabel  = new QLabel(tr("目标体重(斤)"), groupBox);
     QLabel * timeLabel          = new QLabel(tr("第几次减肥"), groupBox);
 
     userNameLineEdit        = new QLineEdit(groupBox);
@@ -51,16 +66,35 @@ void UserWidget::InitAddUserTab(QWidget *widget)
     genderComboBox->addItem(tr("女"));
 
     dateofbirthEdit = new QDateEdit(groupBox);
+    dateofbirthEdit->setDate(QDateTime::currentDateTime().date());
+
+    openHoleDateEdit  = new QDateEdit(groupBox);
+    openHoleDateEdit->setDate(QDateTime::currentDateTime().date());
+
+    openHoleWeigtEdit = new QLineEdit(groupBox);
+    QRegExp rx6("^[1-9][0-9]{1,2}$");
+    validator6 = new QRegExpValidator(rx6, openHoleWeigtEdit);
+    openHoleWeigtEdit->setValidator(validator6);
 
     phoneLineEdit           = new QLineEdit(groupBox);
     QRegExp rx3("^(13[0-9]|14[5|7]|15[0|1|2|3|4|5|6|7|8|9]|18[0|1|2|3|4|5|6|7|8|9])[0-9]{8}$");
     validator3 = new QRegExpValidator(rx3, phoneLineEdit);
     phoneLineEdit->setValidator(validator3);
 
+    weightLineEdit = new QLineEdit(groupBox);
+    QRegExp rx7("^[1-9][0-9]{1,2}$");
+    validator7 = new QRegExpValidator(rx7, weightLineEdit);
+    weightLineEdit->setValidator(validator7);
+
     heightLineEdit = new QLineEdit(groupBox);
     QRegExp rx2("^[1-9][0-9]{1,2}$");
     validator2 = new QRegExpValidator(rx2, heightLineEdit);
     heightLineEdit->setValidator(validator2);
+
+    waistLineEdit = new QLineEdit(groupBox);
+    QRegExp rx8("^[1-9][0-9]{1,2}$");
+    validator8 = new QRegExpValidator(rx8, waistLineEdit);
+    waistLineEdit->setValidator(validator8);
 
     targetweightLineEdit    = new QLineEdit(groupBox);
     QRegExp rx4("^[1-9][0-9]{0,2}$");
@@ -78,24 +112,47 @@ void UserWidget::InitAddUserTab(QWidget *widget)
     gridLayout->addWidget(genderComboBox, 1, 1, 1, 1);
     gridLayout->addWidget(dateofbirthLabel, 2, 0, 1, 1);
     gridLayout->addWidget(dateofbirthEdit, 2, 1, 1, 1);
-    gridLayout->addWidget(phoneLabel, 3, 0, 1, 1);
-    gridLayout->addWidget(phoneLineEdit, 3, 1, 1, 1);
-    gridLayout->addWidget(heightLabel, 4, 0, 1, 1);
-    gridLayout->addWidget(heightLineEdit, 4, 1, 1, 1);
-    gridLayout->addWidget(targetweightLabel, 5, 0, 1, 1);
-    gridLayout->addWidget(targetweightLineEdit, 5, 1, 1, 1);
-    gridLayout->addWidget(timeLabel, 6, 0, 1, 1);
-    gridLayout->addWidget(timeLineEdit, 6, 1, 1, 1);
+
+    gridLayout->addWidget(openHoleTimeLabel, 3, 0, 1, 1);
+    gridLayout->addWidget(openHoleDateEdit, 3, 1, 1, 1);
+    gridLayout->addWidget(openHoleWeightLabel, 4, 0, 1, 1);
+    gridLayout->addWidget(openHoleWeigtEdit, 4, 1, 1, 1);
+
+    gridLayout->addWidget(phoneLabel, 5, 0, 1, 1);
+    gridLayout->addWidget(phoneLineEdit, 5, 1, 1, 1);
+
+    gridLayout->addWidget(weightLabel, 6, 0, 1, 1);
+    gridLayout->addWidget(weightLineEdit, 6, 1, 1, 1);
+
+    gridLayout->addWidget(heightLabel, 7, 0, 1, 1);
+    gridLayout->addWidget(heightLineEdit, 7, 1, 1, 1);
+
+    gridLayout->addWidget(waistLabel, 8, 0, 1, 1);
+    gridLayout->addWidget(waistLineEdit, 8, 1, 1, 1);
+    gridLayout->addWidget(targetweightLabel, 9, 0, 1, 1);
+    gridLayout->addWidget(targetweightLineEdit, 9, 1, 1, 1);
+    gridLayout->addWidget(timeLabel, 10, 0, 1, 1);
+    gridLayout->addWidget(timeLineEdit, 10, 1, 1, 1);
 
     QPushButton * addUserPushButton = new QPushButton(tr("添加用户"), groupBox);
-    gridLayout->addWidget(addUserPushButton, 7, 1, 1, 1);
+    gridLayout->addWidget(addUserPushButton, 11, 1, 1, 1);
     connect(addUserPushButton, &QPushButton::clicked, this, &UserWidget::AddUser);
     gridLayout->setColumnStretch(2, 1);
-    gridLayout->setRowStretch(8, 1);
+    gridLayout->setRowStretch(12, 1);
     //groupBox->setFixedSize(200, 300);
     mainLayout->setAlignment(widget, Qt::AlignLeft);
     mainLayout->addWidget(groupBox);
     widget->setLayout(mainLayout);
+}
+
+void UserWidget::UpdateDateEdit(int index)
+{
+    qDebug()<<"index="<<index;
+    if(index==0)
+    {
+        dateofbirthEdit->setDate(QDateTime::currentDateTime().date());
+        openHoleDateEdit->setDate(QDateTime::currentDateTime().date());
+    }
 }
 
 void UserWidget::AddUser()
@@ -145,14 +202,18 @@ void UserWidget::AddUser()
         return;
     }
 
-    cmd = QString("insert into user(username, gender, dateofbirth, phonenumber, height, targetweight, times) values('%1', '%2', '%3', '%4', '%5', '%6', '%7')")
+    cmd = QString("insert into user(username, gender, dateofbirth, phonenumber, height, targetweight, times, openholetime, openholeweight, weight, waist) values('%1', '%2', '%3', '%4', '%5', '%6', '%7', '%8', '%9', '%10', '%11')")
             .arg(userNameLineEdit->text())
             .arg(genderComboBox->currentText())
             .arg(dateofbirthEdit->date().toString("yyyy-MM-dd"))
             .arg(phoneLineEdit->text())
             .arg(heightLineEdit->text())
             .arg(targetweightLineEdit->text())
-            .arg(timeLineEdit->text());
+            .arg(timeLineEdit->text())
+            .arg(openHoleDateEdit->date().toString("yyyy-MM-dd"))
+            .arg(openHoleWeigtEdit->text())
+            .arg(weightLineEdit->text())
+            .arg(waistLineEdit->text());
     if(query.exec(cmd))
     {
         cmd = QString("select id from user limit 1 offset (select count(*) - 1 from user)");
@@ -171,6 +232,9 @@ void UserWidget::AddUser()
                     heightLineEdit->clear();
                     targetweightLineEdit->clear();
                     timeLineEdit->clear();
+                    openHoleWeigtEdit->clear();
+                    weightLineEdit->clear();
+                    waistLineEdit->clear();
                 }
                 else
                 {
@@ -227,6 +291,10 @@ void UserWidget::InitQueryUserTab(QWidget *widget)
     queryModel->setHeaderData(5, Qt::Horizontal, tr("身高"));
     queryModel->setHeaderData(6, Qt::Horizontal, tr("目标体重"));
     queryModel->setHeaderData(7, Qt::Horizontal, tr("第几次减肥"));
+    queryModel->setHeaderData(8, Qt::Horizontal, tr("开穴日期"));
+    queryModel->setHeaderData(9, Qt::Horizontal, tr("开穴斤数"));
+    queryModel->setHeaderData(10, Qt::Horizontal, tr("体重"));
+    queryModel->setHeaderData(11, Qt::Horizontal, tr("腰围"));
     queryModel->query();
     tableView->setModel(queryModel);
 
@@ -249,6 +317,10 @@ void UserWidget::QueryUserName(const QString &text)
     queryModel->setHeaderData(5, Qt::Horizontal, tr("身高"));
     queryModel->setHeaderData(6, Qt::Horizontal, tr("目标体重"));
     queryModel->setHeaderData(7, Qt::Horizontal, tr("第几次减肥"));
+    queryModel->setHeaderData(8, Qt::Horizontal, tr("开穴日期"));
+    queryModel->setHeaderData(9, Qt::Horizontal, tr("开穴斤数"));
+    queryModel->setHeaderData(10, Qt::Horizontal, tr("体重"));
+    queryModel->setHeaderData(11, Qt::Horizontal, tr("腰围"));
     queryModel->query();
     tableView->setModel(queryModel);
 }
@@ -267,6 +339,10 @@ void UserWidget::QueryPhoneNumber(const QString &text)
     queryModel->setHeaderData(5, Qt::Horizontal, tr("身高"));
     queryModel->setHeaderData(6, Qt::Horizontal, tr("目标体重"));
     queryModel->setHeaderData(7, Qt::Horizontal, tr("第几次减肥"));
+    queryModel->setHeaderData(8, Qt::Horizontal, tr("开穴日期"));
+    queryModel->setHeaderData(9, Qt::Horizontal, tr("开穴斤数"));
+    queryModel->setHeaderData(10, Qt::Horizontal, tr("体重"));
+    queryModel->setHeaderData(11, Qt::Horizontal, tr("腰围"));
     queryModel->query();
     tableView->setModel(queryModel);
 }
@@ -285,6 +361,10 @@ void UserWidget::QueryUserInfo(int index)
         queryModel->setHeaderData(5, Qt::Horizontal, tr("身高"));
         queryModel->setHeaderData(6, Qt::Horizontal, tr("目标体重"));
         queryModel->setHeaderData(7, Qt::Horizontal, tr("第几次减肥"));
+        queryModel->setHeaderData(8, Qt::Horizontal, tr("开穴日期"));
+        queryModel->setHeaderData(9, Qt::Horizontal, tr("开穴斤数"));
+        queryModel->setHeaderData(10, Qt::Horizontal, tr("体重"));
+        queryModel->setHeaderData(11, Qt::Horizontal, tr("腰围"));
         queryModel->query();
         tableView->setModel(queryModel);
     }

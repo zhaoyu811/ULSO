@@ -48,6 +48,7 @@ View::View(QWidget *parent)
       m_chart(0),
       m_tooltip(0)
 {
+    setStyleSheet("padding:0px;border:0px");
     setDragMode(QGraphicsView::NoDrag);
     setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -55,34 +56,36 @@ View::View(QWidget *parent)
     setRenderHint(QPainter::Antialiasing);
 
     this->setMouseTracking(true);
+    QFont font2;
+    font2.setPointSize(12);//字体大小
+    font2.setBold(true);
+    this->setFont(font2);
 }
 
 void View::setChart(QChart *chart)
 {
     m_chart = chart;
-    m_chart->createDefaultAxes();
     m_chart->setAcceptHoverEvents(true);
-
-    QDateTimeAxis *axisX = new QDateTimeAxis;
-    axisX->setFormat("yyyy-MM-dd");
-    axisX->setTitleText(tr("时间"));
-    m_chart->setAxisX(axisX);
-    m_chart->axisY()->setTitleText(tr("体脂率(%)"));
 
     scene()->addItem(m_chart);
 
     connect(m_chart->series().at(0), SIGNAL(clicked(QPointF)), this, SLOT(keepCallout()));
     connect(m_chart->series().at(0), SIGNAL(hovered(QPointF, bool)), this, SLOT(tooltip(QPointF,bool)));
+
+    m_chart->resize(this->size());
 }
 
 void View::resizeEvent(QResizeEvent *event)
 {
+    qDebug()<<event->size();
     if (scene()) {
         scene()->setSceneRect(QRect(QPoint(0, 0), event->size()));
-         m_chart->resize(event->size());
-
-         foreach (Callout *callout, m_callouts)
-             callout->updateGeometry();
+        if(m_chart!=nullptr)
+        {
+            m_chart->resize(event->size());
+            foreach (Callout *callout, m_callouts)
+                callout->updateGeometry();
+        }
     }
     QGraphicsView::resizeEvent(event);
 }
@@ -103,15 +106,28 @@ void View::tooltip(QPointF point, bool state)
     if (m_tooltip == 0)
         m_tooltip = new Callout(m_chart);
 
+#if 0
+    if (state) {
+        qDebug()<<point;
+        m_tooltip->setText(QString("时间: %1 \n体脂率: %2 ").arg(QDateTime::fromTime_t(point.x()).toString("yyyy-MM-dd")).arg(point.y()));
+        m_tooltip->setAnchor(point);
+        m_tooltip->setZValue(11);
+        m_tooltip->updateGeometry();
+        m_tooltip->show();
+    } else {
+        m_tooltip->hide();
+    }
+#else
     //1. 判断点是否是数据点
     //遍历曲线
     QLineSeries *series = (QLineSeries *)m_chart->series().at(0);
     foreach (QPointF point2, series->points()) {
-        QPointF point3 = point-point2;
-        if((abs(point3.rx())<=86500) && (abs(point3.ry())<=10))
+        QPointF point3 = point2-point;
+        //if((abs(point3.rx())<=86400*1000/2) && (abs(point3.ry())<=100))
+        if((abs(point3.rx())<=86400*1000/2))
         {
             if (state) {
-                m_tooltip->setText(QString("时间: %1 \n体脂率: %2 ").arg(QDateTime::fromTime_t(point2.x()).toString("yyyy-MM-dd")).arg(point2.y()));
+                m_tooltip->setText(QString("时间: %1 \n%2: %3 ").arg(QDateTime::fromTime_t(point2.x()/1000).toString("yyyy-MM-dd")).arg(text).arg(point2.y()));
                 m_tooltip->setAnchor(point2);
                 m_tooltip->setZValue(11);
                 m_tooltip->updateGeometry();
@@ -124,7 +140,8 @@ void View::tooltip(QPointF point, bool state)
         }
         else
         {
-            qDebug()<<point<<point2;
+            qDebug()<<point<<point2<<point3;
         }
     }
+#endif
 }

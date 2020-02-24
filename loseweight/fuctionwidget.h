@@ -21,6 +21,8 @@ private:
 Q_SIGNALS:
    void ToolButtonClicked(int index);
 
+protected:
+   void resizeEvent(QResizeEvent *event);
 };
 
 #endif // FUCTIONWIDGET_H

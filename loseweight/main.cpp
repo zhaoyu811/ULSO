@@ -25,7 +25,7 @@ static bool CreateConnection()
     //1. 表一 管理员账号密码
     query.exec("create table admin(admin varchar, password varchar)");
     //2. 表二 用户信息表
-    query.exec("create table user(id integer primary key autoincrement, username varchar, gender varchar, dateofbirth varchar, phonenumber varchar, height varchar, targetweight varchar, times varchar)");
+    query.exec("create table user(id integer primary key autoincrement, username varchar, gender varchar, dateofbirth varchar, phonenumber varchar, height varchar, targetweight varchar, times varchar, openholetime varchar, openholeweight varchar, weight varchar, waist varchar)");
     //3. 表三 每个用户对应一张表
     return true;
 }
@@ -74,7 +74,7 @@ int main(int argc, char *argv[])
                     LogIn login;
                     if(login.exec() == QDialog::Accepted)   //登录成功
                     {
-                        w.show();
+                        w.showMaximized();
                         return a.exec();
                     }
                 }
@@ -86,7 +86,7 @@ int main(int argc, char *argv[])
                         LogIn login;
                         if(login.exec() == QDialog::Accepted)
                         {
-                            w.show();
+                             w.showMaximized();
                             return a.exec();
                         }
                     }
@@ -108,7 +108,7 @@ int main(int argc, char *argv[])
                     LogIn login;
                     if(login.exec() == QDialog::Accepted)
                     {
-                        w.show();
+                         w.showMaximized();
                         return a.exec();
                     }
                 }
@@ -126,7 +126,7 @@ int main(int argc, char *argv[])
                 LogIn login;
                 if(login.exec() == QDialog::Accepted)
                 {
-                    w.show();
+                     w.showMaximized();
                     return a.exec();
                 }
             }

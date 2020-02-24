@@ -7,11 +7,12 @@ MainWindow::MainWindow(QWidget *parent) :
     QWidget(parent)
 {
     QGridLayout * mainLayout = new QGridLayout(this);
+
     //新建停靠窗口
     stackedWidget = new QStackedWidget(this);
     //新建用户窗口
     UserWidget * userWidget = new UserWidget(stackedWidget);
-    userWidget->setFixedHeight(800);
+    userWidget->setFixedHeight(1000);
     stackedWidget->addWidget(userWidget);
     //新建采集信息窗口
     collectinfoWidget = new CollectInfoWidget(stackedWidget);
@@ -23,7 +24,7 @@ MainWindow::MainWindow(QWidget *parent) :
     forecastWidget->setLayout(layout3);
     forecastWidget->layout()->addWidget(forecastLabel);
     stackedWidget->addWidget(forecastWidget);
-    stackedWidget->setFixedWidth(1200);
+    //stackedWidget->setFixedWidth(1200);
 
     //界面刷白
     QPalette palette;
@@ -31,10 +32,11 @@ MainWindow::MainWindow(QWidget *parent) :
     stackedWidget->setPalette(palette);
     this->setPalette(palette);
 
+    mainLayout->addWidget(stackedWidget, 0, 1, 1, 1, Qt::AlignVCenter|Qt::AlignTop);
+
     //创建3个按键
     fuctionWidget = new FuctionWidget(this);
     mainLayout->addWidget(fuctionWidget, 0, 0, 1, 1, Qt::AlignTop|Qt::AlignLeft);
-    mainLayout->addWidget(stackedWidget, 0, 1, 1, 1, Qt::AlignVCenter|Qt::AlignTop);
     mainLayout->setColumnStretch(1, 0);
     mainLayout->setRowStretch(2, 0);
     connect(fuctionWidget, &FuctionWidget::ToolButtonClicked, this, &MainWindow::SlidePage);

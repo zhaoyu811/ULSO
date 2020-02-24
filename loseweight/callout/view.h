@@ -59,6 +59,7 @@ public:
     {
         return m_chart;
     }
+    QString text;
 
 protected:
     void resizeEvent(QResizeEvent *event);

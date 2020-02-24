@@ -23,6 +23,7 @@ public:
 signals:
 
 public slots:
+    void UpdateDateEdit(int index);
     void AddUser();
     void QueryUserInfo(int index);
     void QueryUserName(const QString &text);
@@ -38,8 +39,14 @@ private:
     QLineEdit * userNameLineEdit;
     QComboBox * genderComboBox;
     QDateEdit * dateofbirthEdit;
+
+    QDateEdit * openHoleDateEdit;
+    QLineEdit * openHoleWeigtEdit;
+
     QLineEdit * phoneLineEdit;
+    QLineEdit * weightLineEdit;
     QLineEdit * heightLineEdit;
+    QLineEdit * waistLineEdit;
     QLineEdit * targetweightLineEdit;
     QLineEdit * timeLineEdit;
 
@@ -48,6 +55,9 @@ private:
     QRegExpValidator *validator3;
     QRegExpValidator *validator4;
     QRegExpValidator *validator5;
+    QRegExpValidator *validator6;
+    QRegExpValidator *validator7;
+    QRegExpValidator *validator8;
 
     QLineEdit * queryUserNameLineEdit;
     QLineEdit * phoneNumberLineEdit;

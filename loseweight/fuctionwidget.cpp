@@ -1,4 +1,5 @@
 #include "fuctionwidget.h"
+#include <QDebug>
 
 FuctionWidget::FuctionWidget(QWidget *parent) : QWidget(parent)
 {
@@ -25,3 +26,16 @@ FuctionWidget::FuctionWidget(QWidget *parent) : QWidget(parent)
     this->setAutoFillBackground(true);
     this->setLayout(button_layout);
 }
+
+void FuctionWidget::resizeEvent(QResizeEvent *event)
+{
+    qDebug()<<event->size();
+    static int i=0;
+    if(i==0)
+    {
+        this->resize(event->size()+QSize(0,300));
+        this->repaint();
+        i++;
+    }
+}
+

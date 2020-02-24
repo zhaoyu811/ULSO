@@ -23,6 +23,7 @@ CollectInfoWidget::CollectInfoWidget(QWidget *parent) : QWidget(parent)
     //1. 新建TabWidget 和 Layout
     QGridLayout *mainLayout = new QGridLayout(this);
     tabWidget = new QTabWidget(this);
+    connect(tabWidget, &QTabWidget::currentChanged, this, &UpdateDateEdit);
     mainLayout->addWidget(tabWidget);
 
     //2. 建立界面 采集信息的 曲线绘制的
@@ -50,7 +51,7 @@ void CollectInfoWidget::InitInputWidget(QWidget *widget)
     QLabel * userLabel = new QLabel(tr("用户名"), widget);
     QLabel * phoneLabel = new QLabel(tr("手机号"), widget);
     QLabel * timesLabel = new QLabel(tr("第几次"), widget);
-    QLabel * weightLabel = new QLabel(tr("体重(kg)"), widget);
+    QLabel * weightLabel = new QLabel(tr("体重(斤)"), widget);
     QLabel * waistLabel = new QLabel(tr("腰围(cm)"), widget);
     QLabel * recipesLabel = new QLabel(tr("食谱"), widget);
     QLabel * dateLabel = new QLabel(tr("日期"), widget);
@@ -69,10 +70,25 @@ void CollectInfoWidget::InitInputWidget(QWidget *widget)
     waistLineEdit = new QLineEdit(widget);
     recipesLineEdit = new QLineEdit(widget);
     dateEdit = new QDateEdit(widget);
+    dateEdit->setDate(QDateTime::currentDateTime().date());
     timeofdayComboBox = new QComboBox(widget);
-    timeofdayComboBox->addItem(tr("早"));
-    timeofdayComboBox->addItem(tr("中"));
-    timeofdayComboBox->addItem(tr("晚"));
+    timeofdayComboBox->addItem(tr("早(12点前)"));
+    timeofdayComboBox->addItem(tr("中(16点前)"));
+    timeofdayComboBox->addItem(tr("晚(20点前)"));
+    //qDebug()<<QDateTime::currentDateTime().time().hour();
+    int hour = QDateTime::currentDateTime().time().hour();
+    if(hour<12)
+    {
+        timeofdayComboBox->setCurrentText(tr("早(12点前)"));
+    }
+    else if(hour>=12&&hour<16)
+    {
+        timeofdayComboBox->setCurrentText(tr("中(16点前)"));
+    }
+    else if(hour>=16)
+    {
+        timeofdayComboBox->setCurrentText(tr("晚(20点前)"));
+    }
 
     QGridLayout * mainLayout = new QGridLayout(widget);
     mainLayout->addWidget(userLabel, 0, 0, 1, 1);
@@ -105,6 +121,28 @@ void CollectInfoWidget::InitInputWidget(QWidget *widget)
 
     mainLayout->setAlignment(widget, Qt::AlignLeft|Qt::AlignTop);
     widget->setLayout(mainLayout);
+}
+
+void CollectInfoWidget::UpdateDateEdit(int index)
+{
+    if(index == 0)
+    {
+        dateEdit->setDate(QDateTime::currentDateTime().date());
+
+        int hour = QDateTime::currentDateTime().time().hour();
+        if(hour<12)
+        {
+            timeofdayComboBox->setCurrentText(tr("早(12点前)"));
+        }
+        else if(hour>=12&&hour<16)
+        {
+            timeofdayComboBox->setCurrentText(tr("中(16点前)"));
+        }
+        else if(hour>=16)
+        {
+            timeofdayComboBox->setCurrentText(tr("晚(20点前)"));
+        }
+    }
 }
 
 void CollectInfoWidget::UserLineEdit()
@@ -244,10 +282,16 @@ void CollectInfoWidget::InputButtonClicked()
 
 void CollectInfoWidget::InitChartWidget(QWidget *widget)
 {
+    QFont font;
+    font.setPointSize(14);//字体大小
+    this->setFont(font);
+
     QGridLayout *mainLayout = new QGridLayout(widget);
     QGridLayout *archiveLayout = new QGridLayout();
 
     QLabel *chartUserNameLabel = new QLabel(tr("用户名"), widget);
+    chartUserNameLabel ->setFont(font);//其他控件一样
+
     QLabel *chartPhoneLabel = new QLabel(tr("手机号码"), widget);
     QLabel *chartTimesLabel = new QLabel(tr("第几次"), widget);
 
@@ -257,6 +301,7 @@ void CollectInfoWidget::InitChartWidget(QWidget *widget)
     connect(chartUserNameLineEdit, &QLineEdit::editingFinished, this, &CollectInfoWidget::ChartUserLineEdit);
 
     chartPhoneComboBox = new QComboBox(widget);
+    chartPhoneComboBox->setMinimumWidth(150);
     connect(chartPhoneComboBox, &QComboBox::currentTextChanged, this, &CollectInfoWidget::ChartPhoneComboBoxIndexChanged);
     chartTimesComboBox = new QComboBox(widget);
 
@@ -273,43 +318,56 @@ void CollectInfoWidget::InitChartWidget(QWidget *widget)
     archiveLayout->setColumnStretch(7, 1);
 
     //体重曲线
-    weightChartView = new QChartView(widget);
+    QFont font2;
+    font2.setPointSize(14);//字体大小
+    font2.setBold(true);
+
+    weightChartView = new View(widget);
+    weightChartView->text=tr("体重(斤)");
     weightChart = new QChart();
     weightChart->setTitle(tr("体重曲线"));
-    weightChartView->setChart(weightChart);
+    weightChart->setTitleFont(font2);
+    //weightChartView->setChart(weightChart);
 
     //腰围曲线
-    waistChartView = new QChartView(widget);
+    waistChartView = new View(widget);
+    waistChartView->text=tr("腰围(cm)");
     waistChart = new QChart();
     waistChart->setTitle(tr("腰围曲线"));
-    waistChartView->setChart(waistChart);
+    waistChart->setTitleFont(font2);
+    //waistChartView->setChart(waistChart);
 
     //体脂率曲线
-    bodyFatRateChartView = new QChartView(widget);
+    bodyFatRateChartView = new View(widget);
+    bodyFatRateChartView->text=tr("体脂率(%)");
     bodyFatRateChart = new QChart();
     bodyFatRateChart->setTitle(tr("体脂率曲线"));
-    bodyFatRateChartView->setChart(bodyFatRateChart);
+    bodyFatRateChart->setTitleFont(font2);
+    //bodyFatRateChartView->setChart(bodyFatRateChart);
 
     //健康曲线
-    healthIndexChartView = new QChartView(widget);
+    healthIndexChartView = new View(widget);
+    healthIndexChartView->text=tr("BMI(%)");
     healthIndexChart = new QChart();
     healthIndexChart->setTitle(tr("健康曲线"));
-    healthIndexChartView->setChart(healthIndexChart);
+    healthIndexChart->setTitleFont(font2);
+    //healthIndexChartView->setChart(healthIndexChart);
 
-    QChartView *bodyFatRateView2 = new QChartView(widget);
+#if 0
+    bodyFatRateView2 = new View(widget);
     bodyFatRateChart2 = new QChart();
     bodyFatRateChart2->setTitle("test");
-    bodyFatRateView2->setChart(bodyFatRateChart2);
+    //bodyFatRateView2->setChart(bodyFatRateChart2);
 
     QLineSeries *series = new QLineSeries;
-    series->append(QDateTime::fromSecsSinceEpoch(1578132063).toMSecsSinceEpoch(), 3);
-    series->append(QDateTime::fromSecsSinceEpoch(1578218463).toMSecsSinceEpoch(), 5);
-    series->append(QDateTime::fromSecsSinceEpoch(1578304863).toMSecsSinceEpoch(), 4.5);
-    series->append(QDateTime::fromSecsSinceEpoch(1578391263).toMSecsSinceEpoch(), 1);
-    series->append(QDateTime::fromSecsSinceEpoch(1578477663).toMSecsSinceEpoch(), 2);
-    series->append(QDateTime::fromSecsSinceEpoch(1578477663+1*86400).toMSecsSinceEpoch(), 2);
-    series->append(QDateTime::fromSecsSinceEpoch(1578477663+2*86400).toMSecsSinceEpoch(), 3);
-    series->append(QDateTime::fromSecsSinceEpoch(1578477663+3*86400).toMSecsSinceEpoch(), 5);
+    series->append(QDateTime::fromSecsSinceEpoch(1578132063).toMSecsSinceEpoch(), 13);
+    series->append(QDateTime::fromSecsSinceEpoch(1578218463).toMSecsSinceEpoch(), 15);
+    series->append(QDateTime::fromSecsSinceEpoch(1578304863).toMSecsSinceEpoch(), 14.5);
+    series->append(QDateTime::fromSecsSinceEpoch(1578391263).toMSecsSinceEpoch(), 11);
+    series->append(QDateTime::fromSecsSinceEpoch(1578477663).toMSecsSinceEpoch(), 12);
+//    series->append(QDateTime::fromSecsSinceEpoch(1578477663+1*86400).toMSecsSinceEpoch(), 2);
+//    series->append(QDateTime::fromSecsSinceEpoch(1578477663+2*86400).toMSecsSinceEpoch(), 3);
+//    series->append(QDateTime::fromSecsSinceEpoch(1578477663+3*86400).toMSecsSinceEpoch(), 5);
 //    series->append(QDateTime::fromSecsSinceEpoch(1578477663+4*86400).toMSecsSinceEpoch(), 1);
 //    series->append(QDateTime::fromSecsSinceEpoch(1578477663+5*86400).toMSecsSinceEpoch(), 2);
 //    series->append(QDateTime::fromSecsSinceEpoch(1578477663+6*86400).toMSecsSinceEpoch(), 7);
@@ -321,14 +379,14 @@ void CollectInfoWidget::InitChartWidget(QWidget *widget)
 //    series->append(QDateTime::fromSecsSinceEpoch(1578477663+12*86400).toMSecsSinceEpoch(), 2);
 //    series->append(QDateTime::fromSecsSinceEpoch(1578477663+13*86400).toMSecsSinceEpoch(), 10);
 //    series->append(QDateTime::fromSecsSinceEpoch(1578477663+14*86400).toMSecsSinceEpoch(), 1);
-    series->append(QDateTime::fromSecsSinceEpoch(1578477663+15*86400).toMSecsSinceEpoch(), 2);
-    series->append(QDateTime::fromSecsSinceEpoch(1578477663+16*86400).toMSecsSinceEpoch(), 7);
-    series->append(QDateTime::fromSecsSinceEpoch(1578477663+17*86400).toMSecsSinceEpoch(), 9);
-    series->append(QDateTime::fromSecsSinceEpoch(1578477663+18*86400).toMSecsSinceEpoch(), 10);
-    series->append(QDateTime::fromSecsSinceEpoch(1578477663+19*86400).toMSecsSinceEpoch(), 1);
-    series->append(QDateTime::fromSecsSinceEpoch(1578477663+20*86400).toMSecsSinceEpoch(), 2);
+//    series->append(QDateTime::fromSecsSinceEpoch(1578477663+15*86400).toMSecsSinceEpoch(), 2);
+//    series->append(QDateTime::fromSecsSinceEpoch(1578477663+16*86400).toMSecsSinceEpoch(), 7);
+//    series->append(QDateTime::fromSecsSinceEpoch(1578477663+17*86400).toMSecsSinceEpoch(), 9);
+//    series->append(QDateTime::fromSecsSinceEpoch(1578477663+18*86400).toMSecsSinceEpoch(), 10);
+//    series->append(QDateTime::fromSecsSinceEpoch(1578477663+19*86400).toMSecsSinceEpoch(), 1);
+//    series->append(QDateTime::fromSecsSinceEpoch(1578477663+20*86400).toMSecsSinceEpoch(), 2);
     bodyFatRateChart2->addSeries(series);
-#if 1
+#if 0
     QScatterSeries *series2 = new QScatterSeries;
     series2->append(QDateTime::fromSecsSinceEpoch(1578132063).toMSecsSinceEpoch(), 3);
     series2->append(QDateTime::fromSecsSinceEpoch(1578218463).toMSecsSinceEpoch(), 5);
@@ -364,13 +422,13 @@ void CollectInfoWidget::InitChartWidget(QWidget *widget)
     axisX->setTitleText(tr("时间"));
     bodyFatRateChart2->setAxisX(axisX, series);
     bodyFatRateChart2->axisY()->setTitleText(tr("体脂率(%)"));
-
+    bodyFatRateView2->setChart(bodyFatRateChart2);
+#endif
     mainLayout->addLayout(archiveLayout, 0, 0, 1, 2);
     mainLayout->addWidget(weightChartView, 1, 0, 1, 1);
     mainLayout->addWidget(waistChartView, 1, 1, 1, 1);
     mainLayout->addWidget(bodyFatRateChartView, 2, 1, 1, 1);
     mainLayout->addWidget(healthIndexChartView, 2, 0, 1, 1);
-    mainLayout->addWidget(bodyFatRateView2, 3, 0, 1, 1);
 
     widget->setLayout(mainLayout);
 }
@@ -431,10 +489,13 @@ void CollectInfoWidget::QueryPushButtonClicked()
     int age;
 
     //1. 根据用户名和电话号码定位到档案号
+#if 1
     cmd = QString("select id,gender,height,dateofbirth from user where username='%1' and phonenumber='%2' and times='%3'")
             .arg(chartUserNameLineEdit->text())
             .arg(chartPhoneComboBox->currentText())
             .arg(chartTimesComboBox->currentText());
+#endif
+    //cmd = QString("select id,gender,height,dateofbirth from user where username='赵瑜' and phonenumber='18404905403' and times='1'");
     if(query.exec(cmd))
     {
         if(query.next())
@@ -451,22 +512,29 @@ void CollectInfoWidget::QueryPushButtonClicked()
                 waistSeries = new QLineSeries();
                 bodyFatRateSeries = new QLineSeries();
                 healthIndexSeries = new QLineSeries();
-                bodyFatRateSeries2 = new QLineSeries();
+
+                weightScatterSeries = new QScatterSeries();
+                waistScatterSeries = new QScatterSeries();
+                bodyFatRateScatterSeries = new QScatterSeries();
+                healthIndexScatterSeries = new QScatterSeries();
 
                 if(gender==tr("女"))
                 {
                     while(query.next())
                     {
                         double weight, waist;
-                        weight = query.value(0).toDouble();
+                        weight = query.value(0).toDouble()/2;
                         waist = query.value(1).toDouble();
                         double bmi = weight/height/height*10000;
                         double bfp = ((weight*0.74-(waist*0.082+34.89))/weight*100)/2+(1.2*bmi+0.23*age-5.4)/2;
-                        weightSeries->append(QDateTime::fromString(query.value(2).toString(), "yyyy-MM-dd").toMSecsSinceEpoch(), weight);
-                        waistSeries->append(QDateTime::fromString(query.value(2).toString(), "yyyy-MM-dd").toMSecsSinceEpoch(), waist);
+                        weightSeries->append(QDateTime::fromString(query.value(2).toString(), "yyyy-MM-dd").toMSecsSinceEpoch(), query.value(0).toDouble());
+                        waistSeries->append(QDateTime::fromString(query.value(2).toString(), "yyyy-MM-dd").toMSecsSinceEpoch(), query.value(1).toDouble());
                         healthIndexSeries->append(QDateTime::fromString(query.value(2).toString(), "yyyy-MM-dd").toMSecsSinceEpoch(), bmi);
                         bodyFatRateSeries->append(QDateTime::fromString(query.value(2).toString(), "yyyy-MM-dd").toMSecsSinceEpoch(), bfp);
-                        bodyFatRateSeries2->append(QDateTime::fromString(query.value(2).toString(), "yyyy-MM-dd").toMSecsSinceEpoch(), bfp);
+                        weightScatterSeries->append(QDateTime::fromString(query.value(2).toString(), "yyyy-MM-dd").toMSecsSinceEpoch(), query.value(0).toDouble());
+                        waistScatterSeries->append(QDateTime::fromString(query.value(2).toString(), "yyyy-MM-dd").toMSecsSinceEpoch(), query.value(1).toDouble());
+                        bodyFatRateScatterSeries->append(QDateTime::fromString(query.value(2).toString(), "yyyy-MM-dd").toMSecsSinceEpoch(), bfp);
+                        healthIndexScatterSeries->append(QDateTime::fromString(query.value(2).toString(), "yyyy-MM-dd").toMSecsSinceEpoch(), bmi);
                     }
                 }
                 else if(gender==tr("男"))
@@ -474,15 +542,18 @@ void CollectInfoWidget::QueryPushButtonClicked()
                     while(query.next())
                     {
                         double weight, waist;
-                        weight = query.value(0).toDouble();
+                        weight = query.value(0).toDouble()/2;
                         waist = query.value(1).toDouble();
                         double bmi = weight/height/height*10000;
                         double bfp = ((weight*0.74-(waist*0.082+34.89))/weight*100)/2+(1.2*bmi+0.23*age-5.4-10.8)/2;
-                        weightSeries->append(QDateTime::fromString(query.value(2).toString(), "yyyy-MM-dd").toMSecsSinceEpoch(), query.value(0).toInt());
-                        waistSeries->append(QDateTime::fromString(query.value(2).toString(), "yyyy-MM-dd").toMSecsSinceEpoch(), query.value(1).toInt());
+                        weightSeries->append(QDateTime::fromString(query.value(2).toString(), "yyyy-MM-dd").toMSecsSinceEpoch(), query.value(0).toDouble());
+                        waistSeries->append(QDateTime::fromString(query.value(2).toString(), "yyyy-MM-dd").toMSecsSinceEpoch(), query.value(1).toDouble());
                         healthIndexSeries->append(QDateTime::fromString(query.value(2).toString(), "yyyy-MM-dd").toMSecsSinceEpoch(), bmi);
                         bodyFatRateSeries->append(QDateTime::fromString(query.value(2).toString(), "yyyy-MM-dd").toMSecsSinceEpoch(), bfp);
-                        bodyFatRateSeries2->append(QDateTime::fromString(query.value(2).toString(), "yyyy-MM-dd").toMSecsSinceEpoch(), bfp);
+                        weightScatterSeries->append(QDateTime::fromString(query.value(2).toString(), "yyyy-MM-dd").toMSecsSinceEpoch(), query.value(0).toDouble());
+                        waistScatterSeries->append(QDateTime::fromString(query.value(2).toString(), "yyyy-MM-dd").toMSecsSinceEpoch(), query.value(1).toDouble());
+                        bodyFatRateScatterSeries->append(QDateTime::fromString(query.value(2).toString(), "yyyy-MM-dd").toMSecsSinceEpoch(), bfp);
+                        healthIndexScatterSeries->append(QDateTime::fromString(query.value(2).toString(), "yyyy-MM-dd").toMSecsSinceEpoch(), bmi);
                     }
                 }
                 else
@@ -490,51 +561,93 @@ void CollectInfoWidget::QueryPushButtonClicked()
                     QMessageBox::critical(this, tr("数据错误"), tr("性别为：").arg(gender));
                 }
 
-                weightChartView->chart()->removeAllSeries();
-                weightChartView->chart()->addSeries(weightSeries);
+                QFont font;
+                font.setPointSize(14);//字体大小
+                font.setBold(true);
+
+                if(weightChartView->chart()!=NULL)
+                    weightChartView->chart()->removeAllSeries();
+                weightChart->addSeries(weightSeries);
+                weightChart->addSeries(weightScatterSeries);
                 weightChart->createDefaultAxes();
                 QDateTimeAxis *axisX = new QDateTimeAxis;
+                axisX->setTickCount(6);
                 axisX->setFormat("yyyy-MM-dd");
                 axisX->setTitleText(tr("时间"));
-                weightChartView->chart()->setAxisX(axisX, weightSeries);
-                weightChartView->chart()->axisY()->setTitleText(tr("体重(kg)"));
+                axisX->setTitleFont(font);
+                weightChart->setAxisX(axisX, weightSeries);
 
-                waistChartView->chart()->removeAllSeries();
-                waistChartView->chart()->addSeries(waistSeries);
+                QValueAxis *axisY = new QValueAxis;
+                axisY->setTitleText(tr("体重(斤)"));
+                axisY->setTitleFont(font);
+                axisY->setTickCount(8);
+                weightChart->setAxisY(axisY, weightSeries);
+
+                weightChartView->setChart(weightChart);
+                weightChart->zoom(0.9);
+
+                if(waistChartView->chart()!=NULL)
+                    waistChartView->chart()->removeAllSeries();
+                waistChart->addSeries(waistSeries);
+                waistChart->addSeries(waistScatterSeries);
                 waistChart->createDefaultAxes();
                 axisX = new QDateTimeAxis;
                 axisX->setFormat("yyyy-MM-dd");
                 axisX->setTitleText(tr("时间"));
-                waistChartView->chart()->setAxisX(axisX, waistSeries);
-                waistChartView->chart()->axisY()->setTitleText(tr("腰围(cm)"));
+                axisX->setTitleFont(font);
+                axisX->setTickCount(6);
+                waistChart->setAxisX(axisX, waistSeries);
 
-                healthIndexChartView->chart()->removeAllSeries();
-                healthIndexChartView->chart()->addSeries(healthIndexSeries);
+                axisY = new QValueAxis;
+                axisY->setTitleText(tr("腰围(cm)"));
+                axisY->setTitleFont(font);
+                axisY->setTickCount(8);
+                waistChart->setAxisY(axisY, waistSeries);
+
+                waistChartView->setChart(waistChart);
+                waistChart->zoom(0.9);
+
+                if(healthIndexChartView->chart()!=NULL)
+                    healthIndexChartView->chart()->removeAllSeries();
+                healthIndexChart->addSeries(healthIndexSeries);
+                healthIndexChart->addSeries(healthIndexScatterSeries);
                 healthIndexChart->createDefaultAxes();
                 axisX = new QDateTimeAxis;
                 axisX->setFormat("yyyy-MM-dd");
                 axisX->setTitleText(tr("时间"));
-                healthIndexChartView->chart()->setAxisX(axisX, healthIndexSeries);
-                healthIndexChartView->chart()->axisY()->setTitleText(tr("BMI(%)"));
+                axisX->setTitleFont(font);
+                axisX->setTickCount(6);
+                healthIndexChart->setAxisX(axisX, healthIndexSeries);
 
-                bodyFatRateChartView->chart()->removeAllSeries();
-                bodyFatRateChartView->chart()->addSeries(bodyFatRateSeries);
+                axisY = new QValueAxis;
+                axisY->setTitleText(tr("BMI(%)"));
+                axisY->setTitleFont(font);
+                axisY->setTickCount(8);
+                healthIndexChart->setAxisY(axisY, healthIndexSeries);
+
+                healthIndexChartView->setChart(healthIndexChart);
+                healthIndexChart->zoom(0.9);
+
+                if(bodyFatRateChartView->chart()!=NULL)
+                    bodyFatRateChartView->chart()->removeAllSeries();
+                bodyFatRateChart->addSeries(bodyFatRateSeries);
+                bodyFatRateChart->addSeries(bodyFatRateScatterSeries);
                 bodyFatRateChart->createDefaultAxes();
                 axisX = new QDateTimeAxis;
                 axisX->setFormat("yyyy-MM-dd");
                 axisX->setTitleText(tr("时间"));
-                bodyFatRateChartView->chart()->setAxisX(axisX, bodyFatRateSeries);
-                bodyFatRateChartView->chart()->axisY()->setTitleText(tr("体脂率(%)"));
+                axisX->setTitleFont(font);
+                axisX->setTickCount(6);
+                bodyFatRateChart->setAxisX(axisX, bodyFatRateSeries);
 
+                axisY = new QValueAxis;
+                axisY->setTitleText(tr("体脂率(%)"));
+                axisY->setTitleFont(font);
+                axisY->setTickCount(8);
+                bodyFatRateChart->setAxisY(axisY, bodyFatRateSeries);
 
-                //bodyFatRateView2->chart()->removeAllSeries();
-                //bodyFatRateView2->chart()->addSeries(bodyFatRateSeries);
-                //bodyFatRateChart2->createDefaultAxes();
-                //axisX = new QDateTimeAxis;
-                //axisX->setFormat("yyyy-MM-dd");
-                //axisX->setTitleText(tr("时间"));
-                //bodyFatRateView2->chart()->setAxisX(axisX, bodyFatRateSeries);
-                //bodyFatRateView2->chart()->axisY()->setTitleText(tr("体脂率(%)"));
+                bodyFatRateChartView->setChart(bodyFatRateChart);
+                bodyFatRateChart->zoom(0.9);
             }
             else
             {
