@@ -5,6 +5,7 @@
 #include "tool_button.h"
 #include <QVBoxLayout>
 #include <QLabel>
+#include <QPushButton>
 
 class FuctionWidget : public QWidget
 {

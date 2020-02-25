@@ -20,8 +20,11 @@ FuctionWidget::FuctionWidget(QWidget *parent) : QWidget(parent)
     connect(forecastButton, &ToolButton::clicked, this, [&](){emit ToolButtonClicked(3);});
     button_layout->addWidget(forecastButton, 2, 0);
 
+    button_layout->setColumnStretch(1,1);
+    button_layout->setRowStretch(3,1);
+
     QPalette palette;
-    palette.setBrush(QPalette::Window, QBrush(Qt::green));
+    palette.setBrush(QPalette::Window, QBrush(Qt::white));
     this->setPalette(palette);
     this->setAutoFillBackground(true);
     this->setLayout(button_layout);
@@ -29,13 +32,6 @@ FuctionWidget::FuctionWidget(QWidget *parent) : QWidget(parent)
 
 void FuctionWidget::resizeEvent(QResizeEvent *event)
 {
-    qDebug()<<event->size();
-    static int i=0;
-    if(i==0)
-    {
-        this->resize(event->size()+QSize(0,300));
-        this->repaint();
-        i++;
-    }
+    qDebug()<<"hera"<<event->size();
 }
 
