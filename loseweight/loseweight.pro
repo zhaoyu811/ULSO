@@ -34,7 +34,8 @@ SOURCES += \
     userwidget.cpp \
     collectinfowidget.cpp \
     callout/callout.cpp \
-    callout/view.cpp
+    callout/view.cpp \
+    forecastwidget.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -46,7 +47,8 @@ HEADERS += \
     userwidget.h \
     collectinfowidget.h \
     callout/callout.h \
-    callout/view.h
+    callout/view.h \
+    forecastwidget.h
 
 FORMS += \
     authorize.ui \

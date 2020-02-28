@@ -24,11 +24,7 @@ MainWindow::MainWindow(QWidget *parent) :
     collectinfoWidget = new CollectInfoWidget(stackedWidget);
     stackedWidget->addWidget(collectinfoWidget);
     //新建数据预测窗口
-    QWidget * forecastWidget = new QWidget(stackedWidget);
-    QLabel * forecastLabel = new QLabel("预测信息", forecastWidget);
-    QGridLayout *layout3 = new QGridLayout(forecastWidget);
-    forecastWidget->setLayout(layout3);
-    forecastWidget->layout()->addWidget(forecastLabel);
+    forecastWidget = new ForecastWidget(stackedWidget);
     stackedWidget->addWidget(forecastWidget);
     //stackedWidget->setFixedWidth(1200);
     mainLayout->addWidget(stackedWidget, 0, 1, 1, 1, Qt::AlignVCenter|Qt::AlignTop);
@@ -58,4 +54,6 @@ void MainWindow::SlidePage(int index)
     stackedWidget->setCurrentIndex(index-1);
     if(index==2)
         collectinfoWidget->UpdateQueryMode();
+    else if(index==3)
+        forecastWidget->UpdateQueryMode();
 }

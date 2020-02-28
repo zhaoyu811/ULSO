@@ -76,8 +76,8 @@ void UserWidget::InitAddUserTab(QWidget *widget)
     validator6 = new QRegExpValidator(rx6, openHoleWeigtEdit);
     openHoleWeigtEdit->setValidator(validator6);
 
-    phoneLineEdit           = new QLineEdit(groupBox);
-    QRegExp rx3("^(13[0-9]|14[5|7]|15[0|1|2|3|4|5|6|7|8|9]|18[0|1|2|3|4|5|6|7|8|9])[0-9]{8}$");
+    phoneLineEdit    = new QLineEdit(groupBox);
+    QRegExp rx3("^[0-9]{11}$");
     validator3 = new QRegExpValidator(rx3, phoneLineEdit);
     phoneLineEdit->setValidator(validator3);
 
@@ -170,8 +170,8 @@ void UserWidget::AddUser()
         return;
     }
 
-    QString height=heightLineEdit->text();
-    if(validator2->validate(height, pos)!=QValidator::Acceptable)
+    QString height2=heightLineEdit->text();
+    if(validator2->validate(height2, pos)!=QValidator::Acceptable)
     {
         QMessageBox::critical(this, tr("身高输入错误"), tr("身高输入错误"));
         heightLineEdit->setFocus();
@@ -202,7 +202,24 @@ void UserWidget::AddUser()
         return;
     }
 
-    cmd = QString("insert into user(username, gender, dateofbirth, phonenumber, height, targetweight, times, openholetime, openholeweight, weight, waist) values('%1', '%2', '%3', '%4', '%5', '%6', '%7', '%8', '%9', '%10', '%11')")
+    double weight = weightLineEdit->text().toDouble();  //单位为 斤
+    double waist = waistLineEdit->text().toDouble();
+    double bmi, bfp;
+    double height = heightLineEdit->text().toDouble();
+    int age = QDateTime::currentDateTime().toString("yyyy").toInt()-QDateTime::fromString(dateofbirthEdit->date().toString("yyyy-MM-dd"), "yyyy-MM-dd").toString("yyyy").toInt();
+
+    if(genderComboBox->currentText()==tr("男"))
+    {
+        bmi = weight/2/height/height*10000;
+        bfp = ((weight/2*0.74-(waist*0.082+34.89))/weight/2*100)*0.6+(1.2*bmi+0.23*age-5.4-10.8)*0.4;
+    }
+    else if(genderComboBox->currentText()==tr("女"))
+    {
+        bmi = weight/2/height/height*10000;
+        bfp = ((weight/2*0.74-(waist*0.082+34.89))/weight/2*100)*0.6+(1.2*bmi+0.23*age-5.4)*0.4;
+    }
+
+    cmd = QString("insert into user(username, gender, dateofbirth, phonenumber, height, targetweight, times, openholetime, openholeweight, weight, waist, bmi, bfp) values('%1', '%2', '%3', '%4', '%5', '%6', '%7', '%8', '%9', '%10', '%11', '%12', '%13')")
             .arg(userNameLineEdit->text())
             .arg(genderComboBox->currentText())
             .arg(dateofbirthEdit->date().toString("yyyy-MM-dd"))
@@ -213,7 +230,10 @@ void UserWidget::AddUser()
             .arg(openHoleDateEdit->date().toString("yyyy-MM-dd"))
             .arg(openHoleWeigtEdit->text())
             .arg(weightLineEdit->text())
-            .arg(waistLineEdit->text());
+            .arg(waistLineEdit->text())
+            .arg(bmi)
+            .arg(bfp);
+
     if(query.exec(cmd))
     {
         cmd = QString("select id from user limit 1 offset (select count(*) - 1 from user)");
@@ -222,7 +242,7 @@ void UserWidget::AddUser()
             if(query.next())
             {
                 int id = query.value(0).toInt();
-                cmd = QString("create table archive%1(id integer primary key autoincrement, weight varchar, waist varchar, recipes varchar, datetime varchar, timeofday varchar)").arg(id);
+                cmd = QString("create table archive%1(id integer primary key autoincrement, weight varchar, waist varchar, recipes varchar, datetime varchar, timeofday varchar, bmi varchar, bfp varchar)").arg(id);
                 if(query.exec(cmd))
                 {
                     QMessageBox::information(this, tr("建立用户信息成功"), tr("建立用户信息成功"));

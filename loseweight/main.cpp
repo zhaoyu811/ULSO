@@ -25,7 +25,7 @@ static bool CreateConnection()
     //1. 表一 管理员账号密码
     query.exec("create table admin(admin varchar, password varchar)");
     //2. 表二 用户信息表
-    query.exec("create table user(id integer primary key autoincrement, username varchar, gender varchar, dateofbirth varchar, phonenumber varchar, height varchar, targetweight varchar, times varchar, openholetime varchar, openholeweight varchar, weight varchar, waist varchar)");
+    query.exec("create table user(id integer primary key autoincrement, username varchar, gender varchar, dateofbirth varchar, phonenumber varchar, height varchar, targetweight varchar, times varchar, openholetime varchar, openholeweight varchar, weight varchar, waist varchar, bmi, varchar, bfp varchar)");
     //3. 表三 每个用户对应一张表
     return true;
 }

@@ -7,6 +7,7 @@
 #include "tool_button.h"
 #include "userwidget.h"
 #include "collectinfowidget.h"
+#include "forecastwidget.h"
 
 class MainWindow : public QWidget
 {
@@ -23,6 +24,7 @@ private:
     FuctionWidget *fuctionWidget;
     ToolButton *toolButton;
     CollectInfoWidget * collectinfoWidget;
+    ForecastWidget * forecastWidget;
 };
 
 #endif // MAINWINDOW_H
