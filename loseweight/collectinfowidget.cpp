@@ -284,6 +284,14 @@ void CollectInfoWidget::InputButtonClicked()
                 waistLineEdit->clear();
                 recipesLineEdit->clear();
                 //timeLineEdit->clear();
+                cmd = QString("update user set datacount=datacount+1 where username = '%1' and phonenumber = '%2' and times = '%3'")
+                        .arg(userLineEdit->text())
+                        .arg(phoneComboBox->currentText())
+                        .arg(timesComboBox->currentText());
+                if(query.exec(cmd)==false)
+                {
+                    QMessageBox::information(this, tr("SQL错误"), cmd);
+                }
             }
             else
             {

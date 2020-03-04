@@ -24,6 +24,7 @@ signals:
 
 public slots:
     void UpdateDateEdit(int index);
+    void UpdateTargetWeight(void);
     void AddUser();
     void QueryUserInfo(int index);
     void QueryUserName(const QString &text);
