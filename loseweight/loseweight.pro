@@ -8,7 +8,7 @@ QT       += core gui network sql charts
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-TARGET = loseweight
+TARGET = ULSO
 TEMPLATE = app
 
 # The following define makes your compiler emit warnings if you use
@@ -35,7 +35,9 @@ SOURCES += \
     collectinfowidget.cpp \
     callout/callout.cpp \
     callout/view.cpp \
-    forecastwidget.cpp
+    forecastwidget.cpp \
+    editablesqlmodel.cpp \
+    userdelegate.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -48,7 +50,9 @@ HEADERS += \
     collectinfowidget.h \
     callout/callout.h \
     callout/view.h \
-    forecastwidget.h
+    forecastwidget.h \
+    editablesqlmodel.h \
+    userdelegate.h
 
 FORMS += \
     authorize.ui \
@@ -60,5 +64,7 @@ LIBS += \
 
 RESOURCES += \
     resource.qrc
+
+RC_ICONS = $$PWD/ico/ulso.ico
 
 

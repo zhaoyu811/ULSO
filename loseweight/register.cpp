@@ -11,6 +11,10 @@ Register::Register(QWidget *parent) :
     ui->setupUi(this);
     ui->lE_password->setEchoMode(QLineEdit::Password);
     ui->lE_confirm->setEchoMode(QLineEdit::Password);
+    this->setWindowTitle(tr("ULSO"));
+    QFont font;
+    font.setPointSize(14);//字体大小
+    this->setFont(font);
 }
 
 Register::~Register()

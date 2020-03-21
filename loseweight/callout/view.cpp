@@ -40,6 +40,8 @@
 #include <QDateTime>
 #include <QtCharts/QXYSeries>
 #include <QDebug>
+#include <QtCharts/QScatterSeries>
+#include <QTextDocument>
 
 View::View(QWidget *parent)
     : QGraphicsView(new QGraphicsScene, parent),
@@ -56,23 +58,32 @@ View::View(QWidget *parent)
     setRenderHint(QPainter::Antialiasing);
 
     this->setMouseTracking(true);
+
     QFont font2;
-    font2.setPointSize(12);//字体大小
-    font2.setBold(true);
+    font2.setPointSize(10);//字体大小
     this->setFont(font2);
 }
 
 void View::setChart(QChart *chart)
 {
-    m_chart = chart;
-    m_chart->setAcceptHoverEvents(true);
+    if(m_chart!=NULL)
+    {
+        scene()->update();
+        QScatterSeries *series = (QScatterSeries *)m_chart->series().at(1);
+        //connect(series, SIGNAL(clicked(QPointF)), this, SLOT(keepCallout()));
+        connect(series, SIGNAL(hovered(QPointF, bool)), this, SLOT(tooltip(QPointF,bool)));
+    }
+    else
+    {
+        m_chart = chart;
+        m_chart->setAcceptHoverEvents(true);
+        scene()->addItem(m_chart);
+        QScatterSeries *series = (QScatterSeries *)m_chart->series().at(1);
+        //connect(series, SIGNAL(clicked(QPointF)), this, SLOT(keepCallout()));
+        connect(series, SIGNAL(hovered(QPointF, bool)), this, SLOT(tooltip(QPointF,bool)));
 
-    scene()->addItem(m_chart);
-
-    connect(m_chart->series().at(0), SIGNAL(clicked(QPointF)), this, SLOT(keepCallout()));
-    connect(m_chart->series().at(0), SIGNAL(hovered(QPointF, bool)), this, SLOT(tooltip(QPointF,bool)));
-
-    m_chart->resize(this->size());
+        m_chart->resize(this->size());
+    }
 }
 
 void View::resizeEvent(QResizeEvent *event)
@@ -105,22 +116,32 @@ void View::tooltip(QPointF point, bool state)
 {
     if (m_tooltip == 0)
         m_tooltip = new Callout(m_chart);
+#if 1
+    if (state)
+    {
+        int i=1;
+        QScatterSeries *series = (QScatterSeries *)m_chart->series().at(1);
+        foreach (QPointF point2, series->points())
+        {
+            if(point2 == point)
+                break;
+            i++;
+        }
 
-#if 0
-    if (state) {
-        qDebug()<<point;
-        m_tooltip->setText(QString("时间: %1 \n体脂率: %2 ").arg(QDateTime::fromTime_t(point.x()).toString("yyyy-MM-dd")).arg(point.y()));
+        m_tooltip->setText(QString("第%1次数据\n时间: %2 \n%3: %4").arg(i).arg(QDateTime::fromTime_t(point.x()/1000).toString("yyyy-MM-dd")).arg(text).arg(point.y()));
         m_tooltip->setAnchor(point);
         m_tooltip->setZValue(11);
         m_tooltip->updateGeometry();
         m_tooltip->show();
-    } else {
+    }
+    else
+    {
         m_tooltip->hide();
     }
 #else
     //1. 判断点是否是数据点
     //遍历曲线
-    QLineSeries *series = (QLineSeries *)m_chart->series().at(0);
+    QScatterSeries *series = (QScatterSeries *)m_chart->series().at(1);
     foreach (QPointF point2, series->points()) {
         QPointF point3 = point2-point;
         //if((abs(point3.rx())<=86400*1000/2) && (abs(point3.ry())<=100))
@@ -136,11 +157,11 @@ void View::tooltip(QPointF point, bool state)
                 m_tooltip->hide();
             }
             break;
-            qDebug()<<point3;
+            //qDebug()<<point3;
         }
         else
         {
-            qDebug()<<point<<point2<<point3;
+            //qDebug()<<point<<point2<<point3;
         }
     }
 #endif

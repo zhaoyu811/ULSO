@@ -9,6 +9,10 @@ LogIn::LogIn(QWidget *parent) :
 {
     ui->setupUi(this);
     ui->lE_password->setEchoMode(QLineEdit::Password);
+    this->setWindowTitle(tr("ULSO"));
+    QFont font;
+    font.setPointSize(14);//字体大小
+    this->setFont(font);
 }
 
 LogIn::~LogIn()

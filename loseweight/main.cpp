@@ -14,7 +14,7 @@
 static bool CreateConnection()
 {
     QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
-    db.setDatabaseName("./loseweight.db");
+    db.setDatabaseName("./ULSO.db");
     db.setUserName("hello");
     db.setPassword("world");
     if(!db.open()){
@@ -52,7 +52,7 @@ int main(int argc, char *argv[])
     }
 
     //从注册表中读取数据
-    QSettings settings("HKEY_CURRENT_USER\\Software\\loseweight",QSettings::NativeFormat);
+    QSettings settings("HKEY_CURRENT_USER\\Software\\ULSO",QSettings::NativeFormat);
     QString value = settings.value("key").toString();
     qDebug()<<value;
     if(!value.isEmpty())    //如果不为空
@@ -102,14 +102,33 @@ int main(int argc, char *argv[])
             authorize login;
             if (login.exec() == QDialog::Accepted)//调用login.exec()，阻塞主控制流，直到完成返回，继续执行主控制流
             {
-                Register reg;
-                if(reg.exec() == QDialog::Accepted)
+                QString cmd;
+                QSqlQuery query;
+                cmd = QString("select * from admin");
+
+                if(query.exec(cmd))
                 {
-                    LogIn login;
-                    if(login.exec() == QDialog::Accepted)
+                    if(!query.next())
                     {
-                         w.showMaximized();
-                        return a.exec();
+                        Register reg;
+                        if(reg.exec() == QDialog::Accepted)
+                        {
+                            LogIn login;
+                            if(login.exec() == QDialog::Accepted)
+                            {
+                                 w.showMaximized();
+                                return a.exec();
+                            }
+                        }
+                    }
+                    else
+                    {
+                        LogIn login;
+                        if(login.exec() == QDialog::Accepted)
+                        {
+                             w.showMaximized();
+                            return a.exec();
+                        }
                     }
                 }
             }
@@ -120,14 +139,33 @@ int main(int argc, char *argv[])
         authorize login;
         if (login.exec() == QDialog::Accepted)//调用login.exec()，阻塞主控制流，直到完成返回，继续执行主控制流
         {
-            Register reg;
-            if(reg.exec() == QDialog::Accepted)
+            QString cmd;
+            QSqlQuery query;
+            cmd = QString("select * from admin");
+
+            if(query.exec(cmd))
             {
-                LogIn login;
-                if(login.exec() == QDialog::Accepted)
+                if(!query.next())
                 {
-                     w.showMaximized();
-                    return a.exec();
+                    Register reg;
+                    if(reg.exec() == QDialog::Accepted)
+                    {
+                        LogIn login;
+                        if(login.exec() == QDialog::Accepted)
+                        {
+                             w.showMaximized();
+                            return a.exec();
+                        }
+                    }
+                }
+                else
+                {
+                    LogIn login;
+                    if(login.exec() == QDialog::Accepted)
+                    {
+                         w.showMaximized();
+                        return a.exec();
+                    }
                 }
             }
         }

@@ -255,16 +255,17 @@ void CollectInfoWidget::InputButtonClicked()
             double bmi, bfp;
             double height = query.value(2).toDouble();
             int age = QDateTime::currentDateTime().toString("yyyy").toInt()-QDateTime::fromString(query.value(3).toString(), "yyyy-MM-dd").toString("yyyy").toInt();
-
             if(query.value(1)==tr("男"))
             {
                 bmi = weight/2/height/height*10000;
-                bfp = ((weight/2*0.74-(waist*0.082+34.89))/weight/2*100)*0.6+(1.2*bmi+0.23*age-5.4-10.8)*0.4;
+                //bfp = ((weight/2*0.74-(waist*0.082+34.89))/weight/2*100)*0.6+(1.2*bmi+0.23*age-5.4-10.8)*0.4;
+                bfp = ((((waist*0.74)-(weight/2*0.082+34.89+9.85))/(weight/2)*100)*0.3)+(((1.2*bmi)+(0.23*age)-5.4-10.8)*0.7);
             }
             else if(query.value(1)==tr("女"))
             {
                 bmi = weight/2/height/height*10000;
-                bfp = ((weight/2*0.74-(waist*0.082+34.89))/weight/2*100)*0.6+(1.2*bmi+0.23*age-5.4)*0.4;
+                //bfp = ((weight/2*0.74-(waist*0.082+34.89))/weight/2*100)*0.6+(1.2*bmi+0.23*age-5.4)*0.4;
+                bfp = ((((waist*0.74)-(weight/2*0.082+34.89))/(weight/2)*100)*0.3)+(((1.2*bmi)+(0.23*age)-5.4)*0.7);
             }
 
             cmd = QString("insert into archive%1(weight, waist, recipes, datetime, timeofday, bmi, bfp)values('%2', '%3', '%4', '%5', '%6', '%7', '%8')")
@@ -274,8 +275,8 @@ void CollectInfoWidget::InputButtonClicked()
                     .arg(recipesLineEdit->text())
                     .arg(dateEdit->date().toString("yyyy-MM-dd"))
                     .arg(timeofdayComboBox->currentText())
-                    .arg(bmi)
-                    .arg(bfp);
+                    .arg(QString::number(bmi, 'f', 2))
+                    .arg(QString::number(bfp, 'f', 2));
             if(query.exec(cmd))
             {
                 QMessageBox::information(this, tr("输入成功"), tr("输入成功"));
@@ -346,47 +347,64 @@ void CollectInfoWidget::InitChartWidget(QWidget *widget)
     archiveLayout->addWidget(queryButton, 0, 6, 1, 1);
     archiveLayout->setColumnStretch(7, 1);
 
+    QScrollArea * scrollArea = new QScrollArea(widget);
+    QWidget * widget2 = new QWidget(scrollArea);
+    QVBoxLayout * vBoxLayout = new QVBoxLayout(widget2);
     //体重曲线
     QFont font2;
-    font2.setPointSize(14);//字体大小
+    font2.setPointSize(20);//字体大小
     font2.setBold(true);
 
-    weightChartView = new View(widget);
+    weightChartView = new View(widget2);
     weightChartView->text=tr("体重(斤)");
     weightChart = new QChart();
     weightChart->setTitle(tr("体重曲线"));
     weightChart->setTitleFont(font2);
     //weightChartView->setChart(weightChart);
+    weightChartView->setFixedSize(1660, 900);
 
     //腰围曲线
-    waistChartView = new View(widget);
+    waistChartView = new View(widget2);
     waistChartView->text=tr("腰围(cm)");
     waistChart = new QChart();
     waistChart->setTitle(tr("腰围曲线"));
     waistChart->setTitleFont(font2);
     //waistChartView->setChart(waistChart);
+    waistChartView->setFixedSize(1660, 900);
+
 
     //体脂率曲线
-    bodyFatRateChartView = new View(widget);
+    bodyFatRateChartView = new View(widget2);
     bodyFatRateChartView->text=tr("体脂率(%)");
     bodyFatRateChart = new QChart();
     bodyFatRateChart->setTitle(tr("体脂率曲线"));
     bodyFatRateChart->setTitleFont(font2);
     //bodyFatRateChartView->setChart(bodyFatRateChart);
+    bodyFatRateChartView->setFixedSize(1660, 900);
 
     //健康曲线
-    healthIndexChartView = new View(widget);
+    healthIndexChartView = new View(widget2);
     healthIndexChartView->text=tr("BMI(%)");
     healthIndexChart = new QChart();
-    healthIndexChart->setTitle(tr("健康曲线"));
+    healthIndexChart->setTitle(tr("身体质量指数曲线"));
     healthIndexChart->setTitleFont(font2);
     //healthIndexChartView->setChart(healthIndexChart);
+    healthIndexChartView->setFixedSize(1660, 900);
+
+    vBoxLayout->addWidget(weightChartView);
+    vBoxLayout->addWidget(waistChartView);
+    vBoxLayout->addWidget(bodyFatRateChartView);
+    vBoxLayout->addWidget(healthIndexChartView);
+
+    widget2->setLayout(vBoxLayout);
+    scrollArea->setWidget(widget2);
 
     mainLayout->addLayout(archiveLayout, 0, 0, 1, 2);
-    mainLayout->addWidget(weightChartView, 1, 0, 1, 1);
-    mainLayout->addWidget(waistChartView, 1, 1, 1, 1);
-    mainLayout->addWidget(bodyFatRateChartView, 2, 1, 1, 1);
-    mainLayout->addWidget(healthIndexChartView, 2, 0, 1, 1);
+    mainLayout->addWidget(scrollArea);
+    //mainLayout->addWidget(weightChartView, 1, 0, 1, 1);
+    //mainLayout->addWidget(waistChartView, 1, 1, 1, 1);
+    //mainLayout->addWidget(bodyFatRateChartView, 2, 1, 1, 1);
+    //mainLayout->addWidget(healthIndexChartView, 2, 0, 1, 1);
 
     widget->setLayout(mainLayout);
 }
@@ -443,7 +461,7 @@ void CollectInfoWidget::QueryPushButtonClicked()
     QSqlQuery query;
 
     //1. 根据用户名和电话号码定位到档案号
-    cmd = QString("select id from user where username='%1' and phonenumber='%2' and times='%3'")
+    cmd = QString("select id,gender,dateofbirth,height,openholetime from user where username='%1' and phonenumber='%2' and times='%3'")
             .arg(chartUserNameLineEdit->text())
             .arg(chartPhoneComboBox->currentText())
             .arg(chartTimesComboBox->currentText());
@@ -451,6 +469,9 @@ void CollectInfoWidget::QueryPushButtonClicked()
     {
         if(query.next())
         {
+            QString gender = query.value(1).toString();
+            int age = QDateTime::fromString(query.value(4).toString(), "yyyy-MM-dd").toString("yyyy").toInt()-QDateTime::fromString(query.value(2).toString(), "yyyy-MM-dd").toString("yyyy").toInt();
+            double height = query.value(3).toDouble();
             //2. 根据档案号查询到所有数据
             cmd = QString("select weight, waist, datetime, bmi, bfp from archive%1").arg(query.value(0).toInt());
             if(query.exec(cmd))
@@ -461,9 +482,18 @@ void CollectInfoWidget::QueryPushButtonClicked()
                 healthIndexSeries = new QLineSeries();
 
                 weightScatterSeries = new QScatterSeries();
+                weightScatterSeries->setMarkerSize(10);
                 waistScatterSeries = new QScatterSeries();
+                waistScatterSeries->setMarkerSize(10);
                 bodyFatRateScatterSeries = new QScatterSeries();
+                bodyFatRateScatterSeries->setMarkerSize(10);
                 healthIndexScatterSeries = new QScatterSeries();
+                healthIndexScatterSeries->setMarkerSize(10);
+
+                if(bmiTextItem!=NULL)
+                    healthIndexChartView->scene()->removeItem(bmiTextItem);
+                if(bfpTextItem!=NULL)
+                    bodyFatRateChartView->scene()->removeItem(bfpTextItem);
 
                 while(query.next())
                 {
@@ -471,8 +501,22 @@ void CollectInfoWidget::QueryPushButtonClicked()
                     weight = query.value(0).toDouble();
                     waist = query.value(1).toDouble();
                     double bmi, bfp;
-                    bmi = query.value(3).toDouble();
-                    bfp = query.value(4).toDouble();
+
+                    if(gender==tr("男"))
+                    {
+                        bmi = weight/2/height/height*10000;
+                        //bfp = ((weight/2*0.74-(waist*0.082+34.89))/weight/2*100)*0.6+(1.2*bmi+0.23*age-5.4-10.8)*0.4;
+                        bfp = ((((waist*0.74)-(weight/2*0.082+34.89+9.85))/(weight/2)*100)*0.3)+(((1.2*bmi)+(0.23*age)-5.4-10.8)*0.7);
+                    }
+                    else if(gender==tr("女"))
+                    {
+                        bmi = weight/2/height/height*10000;
+                        //bfp = ((weight/2*0.74-(waist*0.082+34.89))/weight/2*100)*0.6+(1.2*bmi+0.23*age-5.4)*0.4;
+                        bfp = ((((waist*0.74)-(weight/2*0.082+34.89))/(weight/2)*100)*0.3)+(((1.2*bmi)+(0.23*age)-5.4)*0.7);
+                    }
+
+                    //bmi = query.value(3).toDouble();
+                    //bfp = query.value(4).toDouble();
                     qint64 date = QDateTime::fromString(query.value(2).toString(), "yyyy-MM-dd").toMSecsSinceEpoch();
                     weightSeries->append(date, weight);
                     weightScatterSeries->append(date, weight);
@@ -485,16 +529,18 @@ void CollectInfoWidget::QueryPushButtonClicked()
                 }
 
                 QFont font;
-                font.setPointSize(14);//字体大小
+                font.setPointSize(18);//字体大小
                 font.setBold(true);
 
                 if(weightChartView->chart()!=NULL)
+                {
                     weightChartView->chart()->removeAllSeries();
+                }
                 weightChart->addSeries(weightSeries);
                 weightChart->addSeries(weightScatterSeries);
                 weightChart->createDefaultAxes();
                 QDateTimeAxis *axisX = new QDateTimeAxis;
-                axisX->setTickCount(6);
+                axisX->setTickCount(12);
                 axisX->setFormat("yyyy-MM-dd");
                 axisX->setTitleText(tr("时间"));
                 axisX->setTitleFont(font);
@@ -503,14 +549,16 @@ void CollectInfoWidget::QueryPushButtonClicked()
                 QValueAxis *axisY = new QValueAxis;
                 axisY->setTitleText(tr("体重(斤)"));
                 axisY->setTitleFont(font);
-                axisY->setTickCount(8);
+                axisY->setTickCount(16);
                 weightChart->setAxisY(axisY, weightSeries);
 
                 weightChartView->setChart(weightChart);
                 weightChart->zoom(0.9);
 
                 if(waistChartView->chart()!=NULL)
+                {
                     waistChartView->chart()->removeAllSeries();
+                }
                 waistChart->addSeries(waistSeries);
                 waistChart->addSeries(waistScatterSeries);
                 waistChart->createDefaultAxes();
@@ -518,13 +566,13 @@ void CollectInfoWidget::QueryPushButtonClicked()
                 axisX->setFormat("yyyy-MM-dd");
                 axisX->setTitleText(tr("时间"));
                 axisX->setTitleFont(font);
-                axisX->setTickCount(6);
+                axisX->setTickCount(12);
                 waistChart->setAxisX(axisX, waistSeries);
 
                 axisY = new QValueAxis;
                 axisY->setTitleText(tr("腰围(cm)"));
                 axisY->setTitleFont(font);
-                axisY->setTickCount(8);
+                axisY->setTickCount(16);
                 waistChart->setAxisY(axisY, waistSeries);
 
                 waistChartView->setChart(waistChart);
@@ -539,17 +587,33 @@ void CollectInfoWidget::QueryPushButtonClicked()
                 axisX->setFormat("yyyy-MM-dd");
                 axisX->setTitleText(tr("时间"));
                 axisX->setTitleFont(font);
-                axisX->setTickCount(6);
+                axisX->setTickCount(12);
                 healthIndexChart->setAxisX(axisX, healthIndexSeries);
 
                 axisY = new QValueAxis;
                 axisY->setTitleText(tr("BMI(%)"));
                 axisY->setTitleFont(font);
-                axisY->setTickCount(8);
+                axisY->setTickCount(16);
                 healthIndexChart->setAxisY(axisY, healthIndexSeries);
 
                 healthIndexChartView->setChart(healthIndexChart);
                 healthIndexChart->zoom(0.9);
+
+                bmiTextItem = new QGraphicsTextItem;
+                bmiTextItem->setPos(900,120);
+                QTextDocument * textDocument = new QTextDocument(bmiTextItem);
+                QFile file;
+                file.setFileName(tr(":/resource/html/bmi.html"));
+                file.open(QIODevice::ReadOnly);
+                textDocument->setHtml(file.readAll());
+                file.close();
+                bmiTextItem->setDocument(textDocument);
+                bmiTextItem->setZValue(1);
+                bmiTextItem->setFlag(QGraphicsItem::ItemIsMovable, true);
+                QFont font3;
+                font3.setPointSize(14);
+                bmiTextItem->setFont(font3);
+                healthIndexChartView->scene()->addItem(bmiTextItem);
 
                 if(bodyFatRateChartView->chart()!=NULL)
                     bodyFatRateChartView->chart()->removeAllSeries();
@@ -560,17 +624,34 @@ void CollectInfoWidget::QueryPushButtonClicked()
                 axisX->setFormat("yyyy-MM-dd");
                 axisX->setTitleText(tr("时间"));
                 axisX->setTitleFont(font);
-                axisX->setTickCount(6);
+                axisX->setTickCount(12);
                 bodyFatRateChart->setAxisX(axisX, bodyFatRateSeries);
 
                 axisY = new QValueAxis;
                 axisY->setTitleText(tr("体脂率(%)"));
                 axisY->setTitleFont(font);
-                axisY->setTickCount(8);
+                axisY->setTickCount(16);
                 bodyFatRateChart->setAxisY(axisY, bodyFatRateSeries);
 
                 bodyFatRateChartView->setChart(bodyFatRateChart);
                 bodyFatRateChart->zoom(0.9);
+
+                bfpTextItem = new QGraphicsTextItem;
+                bfpTextItem->setPos(900,120);
+                textDocument = new QTextDocument(bfpTextItem);
+                QFile file2;
+                if(gender == tr("男"))
+                    file2.setFileName(tr(":/resource/html/male.html"));
+                else
+                    file2.setFileName(tr(":/resource/html/female.html"));
+                file2.open(QIODevice::ReadOnly);
+                textDocument->setHtml(file2.readAll());
+                file2.close();
+                bfpTextItem->setDocument(textDocument);
+                bfpTextItem->setZValue(1);
+                bfpTextItem->setFlag(QGraphicsItem::ItemIsMovable, true);
+                bfpTextItem->setFont(font3);
+                bodyFatRateChartView->scene()->addItem(bfpTextItem);
             }
             else
             {

@@ -19,6 +19,8 @@ public:
 private slots:
     void on_pB_authorize_clicked();
 
+    void on_pushButton_clicked();
+
 private:
     Ui::authorize *ui;
     QByteArray GetXorEncryptDecrypt(const QByteArray &str, const char &key);

@@ -13,6 +13,9 @@
 #include <QSqlQueryModel>
 #include <QComboBox>
 #include <QDateEdit>
+#include <QSqlTableModel>
+#include "./editablesqlmodel.h"
+#include "./userdelegate.h"
 
 class UserWidget : public QWidget
 {
@@ -34,7 +37,8 @@ private:
     void InitQueryUserTab(QWidget *widget);
     void InitUpdateUserTab(QWidget *widget);
 
-    QSqlQueryModel * queryModel;
+    //QSqlTableModel * queryModel;
+    EditableSqlModel * queryModel;
     QTableView * tableView;
 
     QLineEdit * userNameLineEdit;
@@ -62,6 +66,8 @@ private:
 
     QLineEdit * queryUserNameLineEdit;
     QLineEdit * phoneNumberLineEdit;
+
+    UserDelegate * userDelegate;
 };
 
 #endif // USERWIDGET_H

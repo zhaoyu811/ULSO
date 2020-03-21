@@ -73,6 +73,10 @@ private:
     QScatterSeries *waistScatterSeries;
     QScatterSeries *bodyFatRateScatterSeries;
     QScatterSeries *healthIndexScatterSeries;
+
+
+    QGraphicsTextItem * bmiTextItem=NULL;
+    QGraphicsTextItem * bfpTextItem=NULL;
 };
 
 #endif // COLLECTINFOWIDGET_H

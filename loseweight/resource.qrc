@@ -4,4 +4,9 @@
         <file>resource/img/fucimg/forecast.png</file>
         <file>resource/img/fucimg/user.png</file>
     </qresource>
+    <qresource prefix="/">
+        <file>resource/html/bmi.html</file>
+        <file>resource/html/male.html</file>
+        <file>resource/html/female.html</file>
+    </qresource>
 </RCC>

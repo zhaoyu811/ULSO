@@ -18,11 +18,8 @@ UserWidget::UserWidget(QWidget *parent) : QWidget(parent)
     InitQueryUserTab(queryUserTab);
     connect(tabWidget, &QTabWidget::tabBarClicked, this, &UserWidget::QueryUserInfo);
 
-    QWidget * updateUserTab = new QWidget(this);
-    InitUpdateUserTab(updateUserTab);
     tabWidget->addTab(addUserTab, tr("添加用户"));
     tabWidget->addTab(queryUserTab, tr("查询用户"));
-    tabWidget->addTab(updateUserTab, tr("更新用户"));
 
     this->setLayout(mainLayout);
     QFont font;
@@ -223,12 +220,14 @@ void UserWidget::AddUser()
     if(genderComboBox->currentText()==tr("男"))
     {
         bmi = weight/2/height/height*10000;
-        bfp = ((weight/2*0.74-(waist*0.082+34.89))/weight/2*100)*0.6+(1.2*bmi+0.23*age-5.4-10.8)*0.4;
+        //bfp = ((weight/2*0.74-(waist*0.082+34.89))/weight/2*100)*0.6+(1.2*bmi+0.23*age-5.4-10.8)*0.4;
+        bfp = ((((waist*0.74)-(weight/2*0.082+34.89+9.85))/(weight/2)*100)*0.3)+(((1.2*bmi)+(0.23*age)-5.4-10.8)*0.7);
     }
     else if(genderComboBox->currentText()==tr("女"))
     {
         bmi = weight/2/height/height*10000;
-        bfp = ((weight/2*0.74-(waist*0.082+34.89))/weight/2*100)*0.6+(1.2*bmi+0.23*age-5.4)*0.4;
+        //bfp = ((weight/2*0.74-(waist*0.082+34.89))/weight/2*100)*0.6+(1.2*bmi+0.23*age-5.4)*0.4;
+        bfp = ((((waist*0.74)-(weight/2*0.082+34.89))/(weight/2)*100)*0.3)+(((1.2*bmi)+(0.23*age)-5.4)*0.7);
     }
 
     cmd = QString("insert into user(username, gender, dateofbirth, phonenumber, height, targetweight, times, openholetime, openholeweight, weight, waist, bmi, bfp, datacount, state) values('%1', '%2', '%3', '%4', '%5', '%6', '%7', '%8', '%9', '%10', '%11', '%12', '%13', '%14', '%15')")
@@ -243,8 +242,8 @@ void UserWidget::AddUser()
             .arg(openHoleWeigtEdit->text())
             .arg(weightLineEdit->text())
             .arg(waistLineEdit->text())
-            .arg(bmi)
-            .arg(bfp)
+            .arg(QString::number(bmi, 'f', 2))
+            .arg(QString::number(bfp, 'f', 2))
             .arg(0)
             .arg(tr("减肥中"));
 
@@ -314,9 +313,15 @@ void UserWidget::InitQueryUserTab(QWidget *widget)
     gridLayout->setColumnStretch(4, 4);
 
     tableView = new QTableView(widget);
-    queryModel = new QSqlQueryModel(tableView);
+    tableView->setSelectionMode(QAbstractItemView::SingleSelection);
+    tableView->setSelectionBehavior(QAbstractItemView::SelectRows);
+    //tableView->setItemDelegate();
+    //queryModel = new QSqlTableModel(tableView);
+    queryModel = new EditableSqlModel(tableView);
+    userDelegate = new UserDelegate(tableView);
+    tableView->setItemDelegate(userDelegate);
 
-    queryModel->setQuery("select * from user");
+    queryModel->setQueryCmd("select * from user");
     queryModel->setHeaderData(0, Qt::Horizontal, tr("档案号"));
     queryModel->setHeaderData(1, Qt::Horizontal, tr("姓名"));
     queryModel->setHeaderData(2, Qt::Horizontal, tr("性别"));
@@ -329,7 +334,11 @@ void UserWidget::InitQueryUserTab(QWidget *widget)
     queryModel->setHeaderData(9, Qt::Horizontal, tr("开穴斤数"));
     queryModel->setHeaderData(10, Qt::Horizontal, tr("体重"));
     queryModel->setHeaderData(11, Qt::Horizontal, tr("腰围"));
-    queryModel->query();
+    queryModel->setHeaderData(12, Qt::Horizontal, tr("BMI"));
+    queryModel->setHeaderData(13, Qt::Horizontal, tr("体脂率"));
+    queryModel->setHeaderData(14, Qt::Horizontal, tr("累积次数"));
+    queryModel->setHeaderData(15, Qt::Horizontal, tr("状态"));
+
     tableView->setModel(queryModel);
 
     mainLayout->addLayout(gridLayout, 0, 0, 1, 1);
@@ -342,7 +351,7 @@ void UserWidget::QueryUserName(const QString &text)
     QString cmd;
     cmd = QString("select * from user where username like '%1%'").arg(text);
 
-    queryModel->setQuery(cmd);
+    queryModel->setQueryCmd(cmd);
     queryModel->setHeaderData(0, Qt::Horizontal, tr("档案号"));
     queryModel->setHeaderData(1, Qt::Horizontal, tr("姓名"));
     queryModel->setHeaderData(2, Qt::Horizontal, tr("性别"));
@@ -355,7 +364,10 @@ void UserWidget::QueryUserName(const QString &text)
     queryModel->setHeaderData(9, Qt::Horizontal, tr("开穴斤数"));
     queryModel->setHeaderData(10, Qt::Horizontal, tr("体重"));
     queryModel->setHeaderData(11, Qt::Horizontal, tr("腰围"));
-    queryModel->query();
+    queryModel->setHeaderData(12, Qt::Horizontal, tr("BMI"));
+    queryModel->setHeaderData(13, Qt::Horizontal, tr("体脂率"));
+    queryModel->setHeaderData(14, Qt::Horizontal, tr("累积次数"));
+    queryModel->setHeaderData(15, Qt::Horizontal, tr("状态"));
     tableView->setModel(queryModel);
 }
 
@@ -364,7 +376,7 @@ void UserWidget::QueryPhoneNumber(const QString &text)
     QString cmd;
     cmd = QString("select * from user where phonenumber like '%1%'").arg(text);
 
-    queryModel->setQuery(cmd);
+    queryModel->setQueryCmd(cmd);
     queryModel->setHeaderData(0, Qt::Horizontal, tr("档案号"));
     queryModel->setHeaderData(1, Qt::Horizontal, tr("姓名"));
     queryModel->setHeaderData(2, Qt::Horizontal, tr("性别"));
@@ -377,7 +389,10 @@ void UserWidget::QueryPhoneNumber(const QString &text)
     queryModel->setHeaderData(9, Qt::Horizontal, tr("开穴斤数"));
     queryModel->setHeaderData(10, Qt::Horizontal, tr("体重"));
     queryModel->setHeaderData(11, Qt::Horizontal, tr("腰围"));
-    queryModel->query();
+    queryModel->setHeaderData(12, Qt::Horizontal, tr("BMI"));
+    queryModel->setHeaderData(13, Qt::Horizontal, tr("体脂率"));
+    queryModel->setHeaderData(14, Qt::Horizontal, tr("累积次数"));
+    queryModel->setHeaderData(15, Qt::Horizontal, tr("状态"));
     tableView->setModel(queryModel);
 }
 
@@ -399,12 +414,10 @@ void UserWidget::QueryUserInfo(int index)
         queryModel->setHeaderData(9, Qt::Horizontal, tr("开穴斤数"));
         queryModel->setHeaderData(10, Qt::Horizontal, tr("体重"));
         queryModel->setHeaderData(11, Qt::Horizontal, tr("腰围"));
-        queryModel->query();
+        queryModel->setHeaderData(12, Qt::Horizontal, tr("BMI"));
+        queryModel->setHeaderData(13, Qt::Horizontal, tr("体脂率"));
+        queryModel->setHeaderData(14, Qt::Horizontal, tr("累积次数"));
+        queryModel->setHeaderData(15, Qt::Horizontal, tr("状态"));
         tableView->setModel(queryModel);
     }
-}
-
-void UserWidget::InitUpdateUserTab(QWidget *widget)
-{
-
 }

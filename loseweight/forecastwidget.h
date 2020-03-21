@@ -25,6 +25,7 @@ public slots:
     void ChartUserLineEdit();
     void ChartPhoneComboBoxIndexChanged(const QString &phone);
     void QueryPushButtonClicked();
+    void ChartTimesComboBoxIndexChanged();
 
 private:
     void InitChartWidget(QWidget *widget);
@@ -35,6 +36,13 @@ private:
     QLineEdit * chartUserNameLineEdit;
     QComboBox * chartPhoneComboBox;
     QComboBox * chartTimesComboBox;
+    QComboBox * genderCombox;
+    //QLineEdit * ageLineEdit;
+    QDateEdit * dateEdit;
+    QLineEdit * heightLineEdit;
+    QLineEdit * weightLineEdit;
+    QLineEdit * waistLineEdit;
+    QLineEdit * openHoleWeightLineEdit;
     View *weightChartView;
     View *waistChartView;
     View *bodyFatRateChartView;
@@ -55,6 +63,21 @@ private:
     QScatterSeries *healthIndexScatterSeries;
 
     QTextBrowser *textBrowser;
+
+    void ForecastWeight();
+    void ForecastWaist();
+    void ForecastBMI();
+    void ForecastBFP();
+
+    QVector<double> weightForecastData;
+    QVector<double> waistForecastData;
+    QVector<double> bmiForecastData;
+    QVector<double> bfpForecastData;
+
+    void ShowUserInfo();
+
+    QGraphicsTextItem * bmiTextItem=NULL;
+    QGraphicsTextItem * bfpTextItem=NULL;
 };
 
 #endif // FORECASTWIDGET_H
