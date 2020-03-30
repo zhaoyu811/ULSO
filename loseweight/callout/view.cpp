@@ -42,6 +42,7 @@
 #include <QDebug>
 #include <QtCharts/QScatterSeries>
 #include <QTextDocument>
+#include <QGraphicsProxyWidget>
 
 View::View(QWidget *parent)
     : QGraphicsView(new QGraphicsScene, parent),
@@ -62,10 +63,20 @@ View::View(QWidget *parent)
     QFont font2;
     font2.setPointSize(10);//字体大小
     this->setFont(font2);
+    timer = new QTimer(this);
+    timer->setInterval(1000);
+    timer->setSingleShot(false);
+    connect(timer, &QTimer::timeout, this, &View::TimerTimeOut);
 }
 
 void View::setChart(QChart *chart)
 {
+    if(pixmapItem!=NULL)
+    {
+        this->scene()->removeItem(pixmapItem);
+        pixmapItem=NULL;
+    }
+
     if(m_chart!=NULL)
     {
         scene()->update();
@@ -84,6 +95,20 @@ void View::setChart(QChart *chart)
 
         m_chart->resize(this->size());
     }
+
+    if(pushButton!=NULL)
+    {
+        delete pushButton;
+        pushButton = NULL;
+    }
+
+    pushButton = new QPushButton(tr("动态显示"));
+    QFont font2;
+    font2.setPointSize(14);//字体大小
+    pushButton->setFont(font2);
+    QGraphicsProxyWidget * tmp = this->scene()->addWidget(pushButton);
+    tmp->setPos(1500, 50);
+    connect(pushButton, &QPushButton::clicked, this, &View::PushButtonClicked);
 }
 
 void View::resizeEvent(QResizeEvent *event)
@@ -116,7 +141,7 @@ void View::tooltip(QPointF point, bool state)
 {
     if (m_tooltip == 0)
         m_tooltip = new Callout(m_chart);
-#if 1
+
     if (state)
     {
         int i=1;
@@ -133,36 +158,172 @@ void View::tooltip(QPointF point, bool state)
         m_tooltip->setZValue(11);
         m_tooltip->updateGeometry();
         m_tooltip->show();
+        ShowImage(point.ry());
     }
     else
     {
         m_tooltip->hide();
     }
-#else
-    //1. 判断点是否是数据点
-    //遍历曲线
-    QScatterSeries *series = (QScatterSeries *)m_chart->series().at(1);
-    foreach (QPointF point2, series->points()) {
-        QPointF point3 = point2-point;
-        //if((abs(point3.rx())<=86400*1000/2) && (abs(point3.ry())<=100))
-        if((abs(point3.rx())<=86400*1000/2))
+}
+
+void View::ShowImage(double value)
+{
+    if(pixmapItem!=NULL)
+    {
+        this->scene()->removeItem(pixmapItem);
+        pixmapItem=NULL;
+    }
+
+    QString fileName;
+    if(text == tr("BMI(%)"))
+    {
+        if(gender==tr("男"))
         {
-            if (state) {
-                m_tooltip->setText(QString("时间: %1 \n%2: %3 ").arg(QDateTime::fromTime_t(point2.x()/1000).toString("yyyy-MM-dd")).arg(text).arg(point2.y()));
-                m_tooltip->setAnchor(point2);
-                m_tooltip->setZValue(11);
-                m_tooltip->updateGeometry();
-                m_tooltip->show();
-            } else {
-                m_tooltip->hide();
-            }
-            break;
-            //qDebug()<<point3;
+            //BMI 男
+            if(value<18.5)
+                fileName=tr("BMIM1.jpg");
+            else if(value>=18.5 && value<24.9)
+                fileName=tr("BMIM2.jpg");
+            else if(value>=24.9 && value<29.9)
+                fileName=tr("BMIM3.jpg");
+            else if(value>=29.9 && value<34.9)
+                fileName=tr("BMIM4.jpg");
+            else if(value>=34.9 && value<39.9)
+                fileName=tr("BMIM5.jpg");
+            else if(value>=39.9)
+                fileName=tr("BMIM6.jpg");
         }
         else
         {
-            //qDebug()<<point<<point2<<point3;
+            //BMI 女
+            if(value<15)
+                fileName=tr("BMIW1.jpg");
+            else if(value>=15 && value<18.5)
+                fileName=tr("BMIW2.jpg");
+            else if(value>=18.5 && value<24.9)
+                fileName=tr("BMIW3.jpg");
+            else if(value>=24.9 && value<29.9)
+                fileName=tr("BMIW4.jpg");
+            else if(value>=29.9)
+                fileName=tr("BMIW5.jpg");
+        }
+
+        if(!fileName.isEmpty())
+        {
+            QString prefix=tr(":/img/bmi/resource/img/bmi/");
+            fileName = prefix+fileName;
+            qDebug()<<fileName;
+
+            QPixmap pixmap(fileName);
+            pixmapItem = new QGraphicsPixmapItem(pixmap);
+            pixmapItem->setPos(150, 420);
+            pixmapItem->setFlag(QGraphicsItem::ItemIsMovable, true);
+            this->scene()->addItem(pixmapItem);
         }
     }
-#endif
+    else if(text == tr("体脂率(%)"))
+    {
+        if(gender==tr("男"))
+        {
+            //体脂率 男
+            if(value>=3 && value<=4)
+                fileName=tr("M1.jpg");
+            else if(value>=6 && value<=7)
+                fileName=tr("M2.jpg");
+            else if(value>=10 && value<=12)
+                fileName=tr("M3.jpg");
+            else if(value>=14 && value<=16)
+                fileName=tr("M4.jpg");
+            else if(value>=19 && value<=21)
+                fileName=tr("M5.jpg");
+            else if(value>=24 && value<=26)
+                fileName=tr("M6.jpg");
+            else if(value>=29 && value<=31)
+                fileName=tr("M7.jpg");
+            else if(value>=34 && value<=36)
+                fileName=tr("M8.jpg");
+            else if(value>=39 && value<=41)
+                fileName=tr("M9.jpg");
+        }
+        else
+        {
+            //体脂率  女
+            if(value>=49 && value<=51)
+                fileName=tr("W1.jpg");
+            else if(value>=44 && value<=46)
+                fileName=tr("W2.jpg");
+            else if(value>=39 && value<=41)
+                fileName=tr("W3.jpg");
+            else if(value>=34 && value<=36)
+                fileName=tr("W4.jpg");
+            else if(value>=29 && value<=31)
+                fileName=tr("W5.jpg");
+            else if(value>=24 && value<=26)
+                fileName=tr("W6.jpg");
+            else if(value>=20 && value<=22)
+                fileName=tr("W7.jpg");
+            else if(value>=15 && value<=17)
+                fileName=tr("W8.jpg");
+            else if(value>=10 && value<=12)
+                fileName=tr("W9.jpg");
+        }
+
+        if(!fileName.isEmpty())
+        {
+            QString prefix=tr(":/img/bfp/resource/img/bfp/");
+            fileName = prefix+fileName;
+            qDebug()<<fileName;
+            QPixmap pixmap(fileName);
+            pixmapItem = new QGraphicsPixmapItem(pixmap);
+            pixmapItem->setPos(150, 420);
+            pixmapItem->setFlag(QGraphicsItem::ItemIsMovable, true);
+            this->scene()->addItem(pixmapItem);
+        }
+    }
+    else
+    {
+        return;
+    }
+}
+
+void View::PushButtonClicked()
+{
+    if(pushButton->text()==tr("动态显示"))
+    {
+        pushButton->setText(tr("停止"));
+        timer->start();
+    }
+    else
+    {
+        pushButton->setText(tr("动态显示"));
+        timer->stop();
+    }
+}
+
+void View::TimerTimeOut()
+{
+    if(m_chart!=NULL)
+    {
+        if (m_tooltip == 0)
+            m_tooltip = new Callout(m_chart);
+
+        QScatterSeries *series = (QScatterSeries *)m_chart->series().at(1);
+        if(i<series->points().count())
+        {
+            QPointF point = series->points().at(i++);
+
+            m_tooltip->setText(QString("第%1次数据\n时间: %2 \n%3: %4").arg(i).arg(QDateTime::fromTime_t(point.x()/1000).toString("yyyy-MM-dd")).arg(text).arg(QString::number(point.y(), 'f', 2)));
+            m_tooltip->setAnchor(point);
+            m_tooltip->setZValue(11);
+            m_tooltip->updateGeometry();
+            m_tooltip->show();
+            ShowImage(point.ry());
+        }
+        else
+        {
+            pushButton->setText(tr("动态显示"));
+            timer->stop();
+            i=0;
+        }
+    }
 }

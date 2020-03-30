@@ -9,4 +9,37 @@
         <file>resource/html/male.html</file>
         <file>resource/html/female.html</file>
     </qresource>
+    <qresource prefix="/img/bfp">
+        <file>resource/img/bfp/M1.jpg</file>
+        <file>resource/img/bfp/M2.jpg</file>
+        <file>resource/img/bfp/M3.jpg</file>
+        <file>resource/img/bfp/M4.jpg</file>
+        <file>resource/img/bfp/M5.jpg</file>
+        <file>resource/img/bfp/M6.jpg</file>
+        <file>resource/img/bfp/M7.jpg</file>
+        <file>resource/img/bfp/M8.jpg</file>
+        <file>resource/img/bfp/M9.jpg</file>
+        <file>resource/img/bfp/W1.jpg</file>
+        <file>resource/img/bfp/W2.jpg</file>
+        <file>resource/img/bfp/W3.jpg</file>
+        <file>resource/img/bfp/W4.jpg</file>
+        <file>resource/img/bfp/W5.jpg</file>
+        <file>resource/img/bfp/W6.jpg</file>
+        <file>resource/img/bfp/W7.jpg</file>
+        <file>resource/img/bfp/W8.jpg</file>
+        <file>resource/img/bfp/W9.jpg</file>
+    </qresource>
+    <qresource prefix="/img/bmi">
+        <file>resource/img/bmi/BMIM1.jpg</file>
+        <file>resource/img/bmi/BMIM2.jpg</file>
+        <file>resource/img/bmi/BMIM3.jpg</file>
+        <file>resource/img/bmi/BMIM4.jpg</file>
+        <file>resource/img/bmi/BMIM5.jpg</file>
+        <file>resource/img/bmi/BMIM6.jpg</file>
+        <file>resource/img/bmi/BMIW1.jpg</file>
+        <file>resource/img/bmi/BMIW2.jpg</file>
+        <file>resource/img/bmi/BMIW3.jpg</file>
+        <file>resource/img/bmi/BMIW4.jpg</file>
+        <file>resource/img/bmi/BMIW5.jpg</file>
+    </qresource>
 </RCC>

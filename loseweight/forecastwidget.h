@@ -78,6 +78,11 @@ private:
 
     QGraphicsTextItem * bmiTextItem=NULL;
     QGraphicsTextItem * bfpTextItem=NULL;
+    QGraphicsItemGroup * waistItemGroup=NULL;
+    QGraphicsItemGroup * weightItemGroup=NULL;
+
+    void GenerateWaistTextItem(double height, QString gender);
+    void GenerateWeightTextItem(double height, QString gender, int age);
 };
 
 #endif // FORECASTWIDGET_H

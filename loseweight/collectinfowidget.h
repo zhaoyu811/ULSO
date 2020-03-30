@@ -52,6 +52,8 @@ private:
     QDateEdit * dateEdit;
     QComboBox * timeofdayComboBox;
 
+    QRegExpValidator *validator;
+
     QLineEdit * chartUserNameLineEdit;
     QComboBox * chartPhoneComboBox;
     QComboBox * chartTimesComboBox;
@@ -77,6 +79,12 @@ private:
 
     QGraphicsTextItem * bmiTextItem=NULL;
     QGraphicsTextItem * bfpTextItem=NULL;
+    //QGraphicsTextItem * weightTextItem=NULL;
+    //QGraphicsTextItem * waistTextItem=NULL;
+    QGraphicsItemGroup * waistItemGroup=NULL;
+    QGraphicsItemGroup * weightItemGroup=NULL;
+    void GenerateWaistTextItem(double height, QString gender);
+    void GenerateWeightTextItem(double height, QString gender, int age);
 };
 
 #endif // COLLECTINFOWIDGET_H

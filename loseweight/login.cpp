@@ -2,6 +2,7 @@
 #include "ui_login.h"
 #include <QSqlQuery>
 #include <QMessageBox>
+#include <QSettings>
 
 LogIn::LogIn(QWidget *parent) :
     QDialog(parent),
@@ -13,6 +14,10 @@ LogIn::LogIn(QWidget *parent) :
     QFont font;
     font.setPointSize(14);//字体大小
     this->setFont(font);
+
+    QSettings settings("HKEY_CURRENT_USER\\Software\\ULSO",QSettings::NativeFormat);
+    QString value = settings.value("user").toString();
+    ui->lE_username->setText(value);
 }
 
 LogIn::~LogIn()
@@ -32,6 +37,10 @@ void LogIn::on_pB_login_clicked()
     {
         if(query.next())
         {
+            QSettings settings("HKEY_CURRENT_USER\\Software\\ULSO",QSettings::NativeFormat);
+            //QString value = settings.value("user").toString();
+            settings.setValue("user", ui->lE_username->text());
+
             emit this->accept();
             this->close();
         }

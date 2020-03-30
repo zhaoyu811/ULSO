@@ -32,6 +32,10 @@
 #include <QtWidgets/QGraphicsView>
 #include <QtCharts/QChartGlobal>
 #include <QtCharts/QChartView>
+#include <QGraphicsPixmapItem>
+#include <QGraphicsWidget>
+#include <QPushButton>
+#include <QTimer>
 
 QT_BEGIN_NAMESPACE
 class QGraphicsScene;
@@ -60,6 +64,7 @@ public:
         return m_chart;
     }
     QString text;
+    QString gender;
 
 protected:
     void resizeEvent(QResizeEvent *event);
@@ -68,6 +73,8 @@ protected:
 public slots:
     void keepCallout();
     void tooltip(QPointF point, bool state);
+    void PushButtonClicked();
+    void TimerTimeOut();
 
 private:
     QGraphicsSimpleTextItem *m_coordX;
@@ -75,6 +82,11 @@ private:
     QChart *m_chart;
     Callout *m_tooltip;
     QList<Callout *> m_callouts;
+    QGraphicsPixmapItem * pixmapItem = NULL;
+    void ShowImage(double value);
+    QPushButton * pushButton = NULL;
+    QTimer * timer;
+    int i =0;
 };
 
 #endif
