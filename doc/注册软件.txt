@@ -1,0 +1,18 @@
+二维码 信息
+1. 当前时间戳 1584691798(10位,无毫秒)-MAC
+   例如：1584691798-5C:51:4F:FA:0C:9E
+2. 将上述数据转换为BASH64
+   上述数据转为：MTU4NDY5MTc5OC01QyUzQTUxJTNBNEYlM0FGQSUzQTBDJTNBOUU=
+3. 将2的每个数据和'-'字符作亦或 xor 运算
+
+
+二维码解密
+1. 将扫描后的数据做 xor 运算，得出BASH64 
+   得到BASH64  MTU4NDY5MTc5OC01QyUzQTUxJTNBNEYlM0FGQSUzQTBDJTNBOUU=
+2. BASH64数据 转换为  时间戳-二维码  数据
+   1584691798-5C:51:4F:FA:0C:9E
+3. 软件实现输入框，输入授权日期(例如：有效期至2050年1月1日)
+   当前时间戳-MAC-授权日期(时间戳)
+4. 做BASH64运算->做xor运算->保存为key.bin二进制文件
+
+

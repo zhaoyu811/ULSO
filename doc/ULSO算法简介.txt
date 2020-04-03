@@ -1,0 +1,257 @@
+
+/*******************************************************************************************
+
+    简介： 同性对比，遍历数据库以体脂率筛选出一人，对其数据实施加权算法。
+
+           以性别、年龄、体重、身高、腰围、BMI、体脂率来刻画一个人的体型。
+		   
+********************************************************************************************/   
+	   
+			   /* ---------------------------------------------------------	     
+				  以新客户(目标客户)A，筛选出适合的样本B为例，描述整个过程：	   
+				  --------------------------------------------------------- */
+				  
+    第一步：筛选合适的样本B
+        (1)体脂率圈内范围： -1.5 ~ 2.5；   （A.体脂率-1.5 <= B.体脂率 <=A.体脂率+2.5）
+		   此范围内选取 “减肥次(点)数” 最多的样本，如多个样本点数一样多，则选择 体脂率 最接近A的样本；
+        (2)体脂率圈外范围：即条件(1)内没有合适样本
+           此时选取条件：① B.体脂率>A.体脂率
+                         ② B.体脂率-A.体脂率 最小，即B.体脂率大于A.体脂率且最接近A.体脂率；
+        (3)体脂率最差范围：即条件(1)、(2)均无合适样本
+           此时选取条件：① B.体脂率<A.体脂率
+                         ② B.体脂率-A.体脂率 最大(负数)，即B.体脂率小于A.体脂率且最接近A.体脂率；
+        结束：样本B成功筛选且唯一；
+
+        代码：
+                获取A{性别，年龄，体重，身高，腰围} ——————>  ①.确定性别范围，同性；②计算出A.体脂率
+                遍历数据库，按性别获取样本群体sampleGroupGender；
+				result=按照条件(1)在sampleGroupGender中做差，获取样本群体sampleGroupCondition1th
+				if(result==0)   //条件(1)样本群体中  仅1人
+				{
+				  样本B筛选成功且唯一；
+				  return sampleB;
+				}
+				else if(result==1)  //条件(1)样本群体中多人，获取样本群体sampleGroupCondition1thPlus
+				{
+				  在sampleGroupCondition1thPlus中做差;
+				  样本B筛选成功且唯一；
+				  return sampleB;
+				}
+				else
+				{
+				  result=按照条件(2)在sampleGroupGender中做差，获取样本群体sampleGroupCondition2th
+				  if(result==0)  //条件(2)样本群体中  仅1人
+				  {
+				    样本B筛选成功且唯一；
+				    return sampleB;
+				  }
+				  else if(result==1)  //条件(2)样本群体中多人，获取样本群体sampleGroupCondition2thPlus
+				  {
+				    在sampleGroupCondition2thPlus中做差;
+				    样本B筛选成功且唯一；
+				    return sampleB;
+				  }
+				  else
+				  {
+				    result=按照条件(3)在sampleGroupGender中做差，获取样本群体sampleGroupCondition3th
+					if(result==0)  //条件(3)样本群体中  仅1人
+				    {
+					  样本B筛选成功且唯一；
+					  return sampleB;
+				    }
+				    else if(result==1)  //条件(3)样本群体中多人，获取样本群体sampleGroupCondition3thPlus
+				    {
+				      在sampleGroupCondition3thPlus中做差;
+				      样本B筛选成功且唯一；
+				      return sampleB;
+				    }
+				  }
+				}
+	/*******************  至此 样本B 筛选成功且唯一  ************************/		
+				
+				
+				
+	第二步：计算体重、腰围加权比例(运算均为：求模运算)
+	
+			1.体重曲线 
+            年龄：3岁为一档，波动一档，权重±5%；年龄增大 权重减小；反之，权重增大；(A.年龄-B.年龄)/3  求模运算 			
+			身高：2cm为一档，波动一档，权重±3%；身高增大 权重增大；反之，权重减小；(A.身高-B.身高)/2
+            体重：3斤为一档，波动一档，权重±8%；体重增大 权重增大；反之，权重减小；(A.体重-B.体重)/3
+            
+            例：A{年龄=35，身高=165，体重=145}	  B{年龄=32，身高=162，体重=156}
+            			
+				年龄权重=(A.年龄-B.年龄)/3 *5%=(35-32)/3 *5%=5%;   //  "/"为求模运算,下同
+				身高权重=(A.身高-B.身高)/2 *3%=3%；
+				体重权重=(A.体重-B.体重)/3 *8%=-11/3 *8%=-3*8%=-24%;
+				A.加权比例=1+5%+3%-24%=84%
+				
+				以B的第N次体重变化量求A的第N次体重变化量：A.Weight.δn=84% * B.Weight.δn;   (注：N,n >1)
+				A的第N次体重： A.Weight.N=A.Weight.(N-1) +  A.Weight.δn;
+				
+			结束：A的N个体重数值均已根据B的N个体重数值求出；
+            注： 此时并不代表A已经到达目标体重，此N仅为B的点数，即B现有的所有点数；(N>=40)
+			
+				
+			代码：
+				   Get A{age,height,weight}，B{age,height,weight}  
+				   
+				   unsigned A.ageProportion = (A.age-B.age)/3*5;
+				   unsigned A.heightProportion = (A.height-B.height)/2*3;
+				   unsigned A.weightProportion = (A.weight-B.weight)/3*8;
+				   float A.Weight.proValue=(float)(100+A.ageProportion+A.heightProportion+A.weightProportion)/100;
+				   
+				   计算A的第二次体重 constant A.Weight1th,B.Weight1th
+				   // float B.decValue=B.Weight2th-B.Weight1th;
+				   A.Weight2th=A.Weight1th+A.Weight.proValue*(B.Weight2th-B.Weight1th);
+				   
+				   计算A的第N次体重
+				   A.WeightNth=A.Weight(N-1)th+A.Weight.proValue*(B.WeightNth-B.Weight(N-1)th);  //注：N>1
+				   
+				   
+		    /*******************  至此 A的前N次体重已全部获取到  ************************/			
+				
+				
+			2.腰围曲线
+            腰围：2cm为一档，波动一档，权重±10%；腰围增大，权重增大；反之，减小；(A.腰围-B.腰围)/2 	求模运算	
+			体脂率：0.5一档，波动一档，权重±3%；体脂率增大，权重增大；反之，减小；(A.体脂率-B.体脂率)*2	 取整数
+			
+			/*******     计算方式及代码  原理同体重曲线    *******/
+				
+			/*******************  至此 A的前N次腰围已全部获取到  ************************/	
+				
+     
+
+	 
+    第三步：补点，以体重为主，体重补至到达目标体重，基准点40，最大点数为170点；腰围点数根据体重点数确定  
+
+            1.体重曲线补点
+			样本B仅有n个点，A需要大于n个点才可到达目标体重，具体点数未知
+	        A.Weight -   1,2,3,……，39,40，……，n
+            B.Weight -   1,2,3,……，39,40，……，n
+			
+			A.Weight.δ(n+a)th=0.85*[A.Weight.δ(n/2+a)th+A.Weight.δ(n/2+a+1)th], a∈(1-9)     最小点数为49
+			A.Weight.δ(n+b)th=0.75*[A.Weight.δ(n/2+b)th+A.Weight.δ(n/2+b+1)th], b∈(10-19)	 最小点数为59
+			A.Weight.δ(n+c)th=0.65*[A.Weight.δ(n/2+c)th+A.Weight.δ(n/2+c+1)th], c∈(20-29)   最小点数为69
+			A.Weight.δ(n+d)th=0.55*[A.Weight.δ(n/2+d)th+A.Weight.δ(n/2+d+1)th], d∈(30-39)			   79
+			A.Weight.δ(n+e)th=0.5 *[A.Weight.δ(n/2+e)th+A.Weight.δ(n/2+e+1)th], e∈(>=40)
+			
+			
+			例：计算A的N次体重 A.Weight.data[Nth],(N>n)
+		代码：
+		    unsigned N=n+1;
+		    int getAimWeight()
+			{
+				float enumProValue=0.50;
+				unsigned char tempValue=(N-n)/10;    //求模运算	
+         		
+				switch(tempValue)
+				{
+				  case 0: 
+						 enumProValue=0.85;
+						 break;
+				  case 1: 
+						 enumProValue=0.75;
+						 break;
+				  case 2: 
+						 enumProValue=0.65;
+						 break;
+				  case 3: 
+						 enumProValue=0.55;
+						 break;	
+				  default:
+						 enumProValue=0.50;
+						 break;			  
+				}
+				A.Weight.δ[Nth]=enumProValue*(A.Weight.δ[n/2+(N-n)]th+A.Weight.δ[n/2+(N-n)+1)th];
+				A.Weight.data[Nth]=A.Weight.data[(N-1)th]+A.Weight.δ[Nth];
+				if(A.Weight.data[Nth]<=A.Weight.Aim)
+	            {
+				  return N;
+				  //break;
+				}
+				else 
+				{
+				  N++;
+				  if(N>170)
+				  {
+				    return fault;
+					//break;
+				  }
+				  getAimWeight();
+				}
+			}
+			
+		/*******************  至此 A的N次体重已全部获取到  ************************/	
+			
+
+
+           2.腰围曲线补点
+		   目标客户A的体重总点数为 N 个，即腰围总点数也为 N 个；
+            
+		   A.Weight    -   1,2,3,……，39,40，……，n-1,n，……，N-1,N     
+           A.Waistline -   1,2,3,……，39,40，……，n-1,n，……，N-1,N
+		   
+		   n+x<=N, x∈(a,b,c,d,e)
+		   A.Waistline.δ(n+a)th=0.55*[A.Waistline.δ(n/2+a)th+A.Waistline.δ(n/2+a+1)th], a∈(1-9)
+		   A.Waistline.δ(n+b)th=0.50*[A.Waistline.δ(n/2+b)th+A.Waistline.δ(n/2+b+1)th], b∈(10-19)
+		   A.Waistline.δ(n+c)th=0.45*[A.Waistline.δ(n/2+c)th+A.Waistline.δ(n/2+c+1)th], c∈(20-29)
+		   A.Waistline.δ(n+d)th=0.40*[A.Waistline.δ(n/2+d)th+A.Waistline.δ(n/2+d+1)th], d∈(30-39)
+		   A.Waistline.δ(n+e)th=0.35*[A.Waistline.δ(n/2+e)th+A.Waistline.δ(n/2+e+1)th], e∈(>=40)
+		   
+		   
+		   例：计算A的N次腰围 A.Waistline.data[Nth],(N已知)
+		   
+		代码：
+		    unsigned X=n+1;
+		    int getNnumberWaistline()
+			{
+				float enumProValue=0.35;
+				unsigned char tempValue=(X-n)/10;    //求模运算	
+         		
+				switch(tempValue)
+				{
+				  case 0: 
+						 enumProValue=0.55;
+						 break;
+				  case 1: 
+						 enumProValue=0.50;
+						 break;
+				  case 2: 
+						 enumProValue=0.45;
+						 break;
+				  case 3: 
+						 enumProValue=0.40;
+						 break;	
+				  default:
+						 enumProValue=0.35;
+						 break;			  
+				}
+				A.Waistline.δ[Xth]=enumProValue*(A.Waistline.δ[n/2+(X-n)]th+A.Waistline.δ[n/2+(X-n)+1)th];
+				A.Waistline.data[Xth]=A.Waistline.data[(X-1)th]+A.Waistline.δ[Xth];
+				if(X>=N)
+	            {
+				  return OK;
+				  //break;
+				}
+				else 
+				{
+				  X++;
+				  if(X>170)
+				  {
+				    return fault;
+					//break;
+				  }
+				  getNnumberWaistline();
+				}
+			}
+			
+		/*******************  至此 A的N次腰围已全部获取到  ************************/  
+
+
+    第三步：根据A.Weight.data[Nth]、A.Waistline.data[Nth]、A.age、A.height计算A.BMI.data[Nth]、A.BFR.data[Nth]
+	
+	第四步：绘图
+		
+
+	
+

@@ -83,6 +83,10 @@ private:
 
     void GenerateWaistTextItem(double height, QString gender);
     void GenerateWeightTextItem(double height, QString gender, int age);
+    void ResizeDataCount(QVector<double> &src, QVector<double> &dst, int srcNum, int dstNum);
+    int sampleWeightDataCount;
+    int forecastWeightDataCount;
+    int resizeWeightDataCount;
 };
 
 #endif // FORECASTWIDGET_H
