@@ -44,10 +44,11 @@ int main(int argc, char *argv[])
     //获得MAC
     QString mac;
     QList<QNetworkInterface> networks = QNetworkInterface::allInterfaces();
-    foreach (QNetworkInterface network, networks) {
+    foreach (QNetworkInterface network, networks) { 
         if(network.flags().testFlag(QNetworkInterface::IsUp)\
                 &&network.flags().testFlag(QNetworkInterface::IsRunning)\
                 &&!network.flags().testFlag(QNetworkInterface::IsLoopBack))
+
         mac = network.hardwareAddress();
     }
 

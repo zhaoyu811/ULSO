@@ -482,7 +482,7 @@ void CollectInfoWidget::QueryPushButtonClicked()
     QSqlQuery query;
 
     //1. 根据用户名和电话号码定位到档案号
-    cmd = QString("select id,gender,dateofbirth,height,openholetime from user where username='%1' and phonenumber='%2' and times='%3'")
+    cmd = QString("select id,gender,dateofbirth,height,openholetime,weight,waist,bfp,bmi from user where username='%1' and phonenumber='%2' and times='%3'")
             .arg(chartUserNameLineEdit->text())
             .arg(chartPhoneComboBox->currentText())
             .arg(chartTimesComboBox->currentText());
@@ -490,6 +490,30 @@ void CollectInfoWidget::QueryPushButtonClicked()
     {
         if(query.next())
         {
+            weightSeries = new QLineSeries();
+            waistSeries = new QLineSeries();
+            bodyFatRateSeries = new QLineSeries();
+            healthIndexSeries = new QLineSeries();
+
+            weightScatterSeries = new QScatterSeries();
+            weightScatterSeries->setMarkerSize(10);
+            waistScatterSeries = new QScatterSeries();
+            waistScatterSeries->setMarkerSize(10);
+            bodyFatRateScatterSeries = new QScatterSeries();
+            bodyFatRateScatterSeries->setMarkerSize(10);
+            healthIndexScatterSeries = new QScatterSeries();
+            healthIndexScatterSeries->setMarkerSize(10);
+
+            qint64 date = QDateTime::fromString(query.value(4).toString(), "yyyy-MM-dd").toMSecsSinceEpoch();
+            weightSeries->append(date, query.value(5).toDouble());
+            weightScatterSeries->append(date, query.value(5).toDouble());
+            waistSeries->append(date, query.value(6).toDouble());
+            waistScatterSeries->append(date, query.value(6).toDouble());
+            bodyFatRateSeries->append(date, query.value(7).toDouble());
+            bodyFatRateScatterSeries->append(date, query.value(7).toDouble());
+            healthIndexSeries->append(date, query.value(8).toDouble());
+            healthIndexScatterSeries->append(date, query.value(8).toDouble());
+
             QString gender = query.value(1).toString();
             int age = QDateTime::fromString(query.value(4).toString(), "yyyy-MM-dd").toString("yyyy").toInt()-QDateTime::fromString(query.value(2).toString(), "yyyy-MM-dd").toString("yyyy").toInt();
             double height = query.value(3).toDouble();
@@ -497,20 +521,6 @@ void CollectInfoWidget::QueryPushButtonClicked()
             cmd = QString("select weight, waist, datetime, bmi, bfp from archive%1").arg(query.value(0).toInt());
             if(query.exec(cmd))
             {
-                weightSeries = new QLineSeries();
-                waistSeries = new QLineSeries();
-                bodyFatRateSeries = new QLineSeries();
-                healthIndexSeries = new QLineSeries();
-
-                weightScatterSeries = new QScatterSeries();
-                weightScatterSeries->setMarkerSize(10);
-                waistScatterSeries = new QScatterSeries();
-                waistScatterSeries->setMarkerSize(10);
-                bodyFatRateScatterSeries = new QScatterSeries();
-                bodyFatRateScatterSeries->setMarkerSize(10);
-                healthIndexScatterSeries = new QScatterSeries();
-                healthIndexScatterSeries->setMarkerSize(10);
-
                 if(bmiTextItem!=NULL)
                     healthIndexChartView->scene()->removeItem(bmiTextItem);
                 if(bfpTextItem!=NULL)
